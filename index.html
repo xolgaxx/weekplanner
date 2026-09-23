@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aanpasbare Weekplanner & Agenda</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Comic+Neue:wght@400;700&family=Fredoka:wght@400;600&family=Indie+Flower&family=Inter:wght@400;600;700&family=Montserrat:wght@400;600;800&family=Playfair+Display:ital,wght@0,600;1,400&family=Poppins:wght@400;600;700&family=Press+Start+2P&family=Quicksand:wght@500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --card-border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+            --header-bg: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            --header-text: #ffffff;
+            --radius-val: 16px;
+            --border-style-val: solid;
+            --border-width-val: 1px;
+            --font-family-val: 'Inter', sans-serif;
+            --shadow-val: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --profile-border-color: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: var(--font-family-val);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .custom-card {
+            background-color: var(--card-bg);
+            border-style: var(--border-style-val);
+            border-width: var(--border-width-val);
+            border-color: var(--card-border-color);
+            border-radius: var(--radius-val);
+            box-shadow: var(--shadow-val);
+            transition: all 0.25s ease;
+        }
+
+        .custom-header {
+            background: var(--header-bg);
+            color: var(--header-text);
+        }
+
+        .custom-btn-primary {
+            background-color: var(--accent-color);
+            color: #ffffff;
+        }
+        .custom-btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .profile-avatar-frame {
+            border-color: var(--profile-border-color);
+            box-shadow: 0 0 12px rgba(0,0,0,0.15);
+        }
+
+        /* Typography options */
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .font-poppins { font-family: 'Poppins', sans-serif; }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        .font-quicksand { font-family: 'Quicksand', sans-serif; }
+        .font-fredoka { font-family: 'Fredoka', cursive; }
+        .font-caveat { font-family: 'Caveat', cursive; }
+        .font-indie { font-family: 'Indie Flower', cursive; }
+        .font-playfair { font-family: 'Playfair Display', serif; }
+        .font-spacemono { font-family: 'Space Mono', monospace; }
+        .font-retro { font-family: 'Press Start 2P', cursive; }
+        .font-comic { font-family: 'Comic Neue', cursive; }
+
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2);
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0,0,0,0.4);
+        }
+
+        /* Item Drag & Drop Styles */
+        .item-card.dragging {
+            opacity: 0.4;
+            transform: scale(0.98);
+        }
+        
+        .drag-over-zone {
+            background-color: rgba(99, 102, 241, 0.08);
+            border: 2px dashed var(--accent-color) !important;
+        }
+
+        .completed-strike {
+            text-decoration: line-through;
+            opacity: 0.65;
+        }
+
+        .category-vertical-ribbon {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            text-align: center;
+            letter-spacing: 0.05em;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- APP HEADER -->
+    <header id="planner-header" class="custom-header p-5 md:p-6 shadow-lg relative overflow-hidden transition-all duration-300">
+        <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-4 relative z-10">
+            
+            <!-- User Profile & Greeting Section -->
+            <div class="flex items-center space-x-4">
+                <div class="relative group cursor-pointer" id="header-avatar-container" title="Klik om instellingen te openen">
+                    <img id="header-avatar-img" src="https://placehold.co/120x120/6366f1/ffffff?text=U" alt="Profielfoto" class="profile-avatar-frame w-14 h-14 md:w-16 md:h-16 rounded-full object-cover border-2 shadow-md transition-transform duration-300 group-hover:scale-105">
+                    <div class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-camera text-white text-xs"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 id="header-greeting-text" class="text-xl md:text-2xl font-extrabold tracking-tight">Welkom terug!</h1>
+                    <p id="header-subtitle-text" class="text-xs md:text-sm opacity-90 font-medium">Mijn Unieke Weekplanner</p>
+                </div>
+            </div>
+
+            <!-- Date Navigation Controls -->
+            <div class="flex items-center space-x-2 bg-white/15 backdrop-blur-md p-1.5 rounded-xl border border-white/20">
+                <button id="btn-prev-week" class="p-2 hover:bg-white/20 rounded-lg transition text-xs md:text-sm flex items-center gap-1 font-semibold" title="Vorige week">
+                    <i class="fa-solid fa-chevron-left"></i>
+                    <span class="hidden sm:inline">Vorige</span>
+                </button>
+                <button id="btn-today" class="px-3 py-1.5 bg-white text-gray-900 rounded-lg font-bold text-xs shadow-sm hover:bg-opacity-90 transition">
+                    Vandaag
+                </button>
+                <span id="current-week-label" class="px-2 text-xs md:text-sm font-bold tracking-wide">Week --</span>
+                <button id="btn-next-week" class="p-2 hover:bg-white/20 rounded-lg transition text-xs md:text-sm flex items-center gap-1 font-semibold" title="Volgende week">
+                    <span class="hidden sm:inline">Volgende</span>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center space-x-2">
+                <button id="btn-toggle-customizer" class="px-4 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white rounded-xl text-sm font-semibold flex items-center gap-2 transition shadow-sm">
+                    <i class="fa-solid fa-palette text-amber-300"></i>
+                    <span>Aanpassen</span>
+                </button>
+                <button id="btn-add-item-global" class="px-4 py-2.5 bg-white text-gray-900 hover:bg-opacity-90 rounded-xl text-sm font-bold flex items-center gap-2 transition shadow-md">
+                    <i class="fa-solid fa-plus text-indigo-600"></i>
+                    <span class="hidden sm:inline">Item Toevoegen</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER WITH SIDEBAR DRAWER -->
+    <div class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 flex flex-col lg:flex-row gap-6 relative">
+
+        <!-- Overlay Backing for mobile/tablet when sidebar is open -->
+        <div id="customizer-overlay" class="fixed inset-0 bg-black/40 z-30 hidden backdrop-blur-xs transition-opacity"></div>
+
+        <!-- CUSTOMIZER PANEL -->
+        <aside id="customizer-panel" class="hidden fixed lg:relative right-0 lg:right-auto top-0 lg:top-auto h-full lg:h-auto w-80 lg:w-80 shrink-0 custom-card p-5 space-y-6 z-40 max-h-screen lg:max-h-[85vh] overflow-y-auto shadow-2xl lg:shadow-md">
+            <div class="flex items-center justify-between border-b pb-3 border-gray-200/50">
+                <h2 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-indigo-500"></i>
+                    <span>Instellingen &amp; Stijl</span>
+                </h2>
+                <button id="btn-close-customizer" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition" title="Sluiten">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <!-- Profile & Personalization -->
+            <div class="space-y-3 pt-1">
+                <label class="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center justify-between">
+                    <span>Profiel &amp; Begroeting</span>
+                    <i class="fa-solid fa-user-gear text-xs text-indigo-500"></i>
+                </label>
+                <div>
+                    <span class="text-xs font-medium block mb-1">Naam / Begroeting</span>
+                    <input type="text" id="setting-user-name" placeholder="bijv. Alex of Welkom terug, Alex!" class="w-full p-2.5 rounded-xl border border-gray-300 text-xs">
+                </div>
+                <div>
+                    <span class="text-xs font-medium block mb-1">Ondertitel Header</span>
+                    <input type="text" id="setting-title-text" placeholder="bijv. Mijn Unieke Weekplanner..." class="w-full p-2 rounded-xl border border-gray-300 text-xs">
+                </div>
+                <div>
+                    <span class="text-xs font-medium block mb-1">Profielfoto Uploaden</span>
+                    <input type="file" id="setting-avatar-input" accept="image/*" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <span class="text-xs font-medium block mb-1">Avatar Vorm</span>
+                        <select id="setting-avatar-shape" class="w-full p-2 rounded-xl border border-gray-300 text-xs">
+                            <option value="rounded-full">Rond</option>
+                            <option value="rounded-2xl">Zachte Hoek</option>
+                            <option value="rounded-none">Vierkant</option>
+                        </select>
+                    </div>
+                    <div>
+                        <span class="text-xs font-medium block mb-1">Rand Kleur</span>
+                        <input type="color" id="color-profile-border" value="#ffffff" class="w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Management in Settings -->
+            <div class="space-y-3 pt-2 border-t border-gray-200/50">
+                <label class="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center justify-between">
+                    <span>Categorie Beheer</span>
+                    <i class="fa-solid fa-tags text-xs text-indigo-500"></i>
+                </label>
+                <div id="category-manager-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                </div>
+                
+                <div class="flex items-center gap-2 pt-1">
+                    <input type="text" id="new-cat-name" placeholder="Nieuwe categorie..." class="flex-1 p-2 rounded-xl border border-gray-300 text-xs">
+                    <input type="color" id="new-cat-color" value="#3b82f6" class="w-8 h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5 shrink-0">
+                    <button id="btn-add-category" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Font Chooser -->
+            <div class="space-y-2 pt-2 border-t border-gray-200/50">
+                <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Lettertype (Typography)</label>
+                <select id="setting-font" class="w-full p-2.5 rounded-xl border border-gray-300 text-xs">
+                    <option value="font-inter">Inter (Strak &amp; Modern)</option>
+                    <option value="font-poppins">Poppins (Afgerond &amp; Hip)</option>
+                    <option value="font-montserrat">Montserrat (Stoer &amp; Duidelijk)</option>
+                    <option value="font-quicksand">Quicksand (Zacht &amp; Vriendelijk)</option>
+                    <option value="font-fredoka">Fredoka (Vrolijk &amp; Dik)</option>
+                    <option value="font-caveat">Caveat (Handgeschreven Speels)</option>
+                    <option value="font-indie">Indie Flower (Casual Krabbel)</option>
+                    <option value="font-playfair">Playfair Display (Klassiek Luxe)</option>
+                    <option value="font-spacemono">Space Mono (Tech &amp; Code)</option>
+                    <option value="font-retro">Press Start 2P (Retro Pixel)</option>
+                    <option value="font-comic">Comic Neue (Informeel)</option>
+                </select>
+            </div>
+
+            <!-- Spotlight Settings -->
+            <div class="space-y-2 pt-2 border-t border-gray-200/50">
+                <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Focus op Vandaag</label>
+                <div class="flex items-center justify-between p-2 bg-gray-50/50 rounded-xl border border-gray-200/50">
+                    <span class="text-xs font-medium">"Vandaag Spotlight" tonen</span>
+                    <input type="checkbox" id="setting-show-spotlight" class="w-4 h-4 accent-indigo-600 rounded cursor-pointer" checked>
+                </div>
+            </div>
+
+            <!-- Theme Presets -->
+            <div class="space-y-2 pt-2 border-t border-gray-200/50">
+                <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Thema Presets</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button data-preset="pastel" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-indigo-500 transition flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-pink-300 inline-block"></span> Pastel Droom
+                    </button>
+                    <button data-preset="cyberpunk" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-indigo-500 transition flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-yellow-400 inline-block"></span> Cyberpunk
+                    </button>
+                    <button data-preset="sunset" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-indigo-500 transition flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-orange-400 inline-block"></span> Zonsondergang
+                    </button>
+                    <button data-preset="dark" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-indigo-500 transition flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-gray-800 inline-block"></span> Dark OLED
+                    </button>
+                    <button data-preset="paper" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-indigo-500 transition flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-amber-100 inline-block"></span> Minimal Papier
+                    </button>
+                    <button data-preset="neon" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-indigo-500 transition flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-cyan-400 inline-block"></span> Neon Pop
+                    </button>
+                </div>
+            </div>
+
+            <!-- Custom Colors Picker Section -->
+            <div class="space-y-3 pt-2 border-t border-gray-200/50">
+                <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Kleuren Aanpassen</label>
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                        <span class="block mb-1 font-medium">Achtergrond</span>
+                        <input type="color" id="color-bg" class="w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5">
+                    </div>
+                    <div>
+                        <span class="block mb-1 font-medium">Kaart Kleur</span>
+                        <input type="color" id="color-card" class="w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5">
+                    </div>
+                    <div>
+                        <span class="block mb-1 font-medium">Tekst Kleur</span>
+                        <input type="color" id="color-text" class="w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5">
+                    </div>
+                    <div>
+                        <span class="block mb-1 font-medium">Accent Kleur</span>
+                        <input type="color" id="color-accent" class="w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Header Gradient Styling -->
+            <div class="space-y-2">
+                <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Header Stijl</label>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <span class="block mb-1 font-medium">Kleur Van</span>
+                        <input type="color" id="color-header-1" class="w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5" value="#4f46e5">
+                    </div>
+                    <div>
+                        <span class="block mb-1 font-medium">Kleur Naar</span>
+                        <input type="color" id="color-header-2" class="w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5" value="#7c3aed">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shapes & Corners -->
+            <div class="space-y-2">
+                <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Vorm &amp; Randen</label>
+                <div class="space-y-2">
+                    <div>
+                        <span class="text-xs font-medium block mb-1">Hoek-afronding</span>
+                        <select id="setting-radius" class="w-full p-2 rounded-xl border border-gray-300 text-xs">
+                            <option value="0px">Strak (Vierkant)</option>
+                            <option value="8px">Middel (Afgerond)</option>
+                            <option value="16px" selected>Zacht (Geraffineerd)</option>
+                            <option value="28px">Pill / Speels</option>
+                        </select>
+                    </div>
+                    <div>
+                        <span class="text-xs font-medium block mb-1">Rand Stijl</span>
+                        <select id="setting-border-style" class="w-full p-2 rounded-xl border border-gray-300 text-xs">
+                            <option value="solid">Effen Lijn</option>
+                            <option value="dashed">Gestreepte Lijn</option>
+                            <option value="dotted">Gestippeld</option>
+                            <option value="double">Dubbele Lijn</option>
+                            <option value="glow">Glow Effect</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Management & Export -->
+            <div class="pt-4 border-t border-gray-200/50 space-y-2">
+                <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Data &amp; Backup</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btn-export-json" class="p-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-download"></i> Exporteer
+                    </button>
+                    <button id="btn-import-json-trigger" class="p-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-upload"></i> Importeer
+                    </button>
+                    <input type="file" id="import-file-input" class="hidden" accept=".json">
+                </div>
+                <button id="btn-reset-data" class="w-full p-2 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-trash-arrow-up"></i> Reset Naar Standaard
+                </button>
+            </div>
+        </aside>
+
+        <!-- PLANNER CANVAS AREA -->
+        <main class="flex-1 flex flex-col space-y-5 min-w-0">
+            
+            <!-- Quick Info & Category Filter Bar -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs opacity-90 px-1">
+                <div class="flex items-center gap-2">
+                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="font-medium">Automatisch opgeslagen</span>
+                </div>
+
+                <!-- CATEGORY FILTER BAR -->
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full" id="category-filter-bar">
+                </div>
+
+                <div class="flex items-center gap-3 shrink-0">
+                    <span id="total-items-badge" class="font-bold">0 Items deze week</span>
+                </div>
+            </div>
+
+            <!-- PROMINENT "TODAY FOCUS SPOTLIGHT" SECTION -->
+            <section id="today-spotlight-container" class="custom-card p-5 border-l-4 border-l-indigo-500 transition-all duration-300">
+            </section>
+
+            <!-- DYNAMIC WEEK CONTAINER -->
+            <div id="planner-grid-container" class="flex flex-col gap-4 transition-all duration-300">
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL FOR ADDING / EDITING ITEM -->
+    <div id="item-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="custom-card w-full max-w-md p-6 space-y-5 relative animate-in fade-in zoom-in duration-200">
+            <div class="flex items-center justify-between border-b pb-3 border-gray-200/50">
+                <h3 id="modal-item-title" class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-indigo-500"></i>
+                    <span>Nieuw Item Inplannen</span>
+                </h3>
+                <button id="btn-close-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="item-form" class="space-y-4">
+                <input type="hidden" id="item-id">
+                
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Titel / Omschrijving</label>
+                    <input type="text" id="item-input-title" required placeholder="Wat wil je inplannen?" class="w-full p-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Dag</label>
+                    <select id="item-input-day" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm bg-white">
+                        <option value="0">Maandag</option>
+                        <option value="1">Dinsdag</option>
+                        <option value="2">Woensdag</option>
+                        <option value="3">Donderdag</option>
+                        <option value="4">Vrijdag</option>
+                        <option value="5">Zaterdag</option>
+                        <option value="6">Zondag</option>
+                    </select>
+                </div>
+
+                <!-- Start & End time -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Starttijd (Optioneel)</label>
+                        <input type="time" id="item-input-time" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Eindtijd (Optioneel)</label>
+                        <input type="time" id="item-input-end-time" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Categorie Label</label>
+                        <select id="item-input-category" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm bg-white">
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Prioriteit</label>
+                        <select id="item-input-priority" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm bg-white">
+                            <option value="none" selected>Geen ⚪</option>
+                            <option value="low">Laag 🟢</option>
+                            <option value="medium">Middel 🟡</option>
+                            <option value="high">Hoog 🔴</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Sticker / Emoji Picker met uitgebreide selectie -->
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Kies een Emoji / Icoon</label>
+                    <div id="sticker-picker" class="grid grid-cols-8 gap-1.5 max-h-36 overflow-y-auto p-1.5 border border-gray-200 rounded-xl bg-gray-50/50">
+                        <!-- Geen Emoji optie -->
+                        <button type="button" data-sticker="" class="sticker-opt text-xs p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center font-bold text-gray-400" title="Geen emoji">❌</button>
+
+                        <!-- Populair / Algemeen -->
+                        <button type="button" data-sticker="⭐" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">⭐</button>
+                        <button type="button" data-sticker="🔥" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🔥</button>
+                        <button type="button" data-sticker="💡" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">💡</button>
+                        <button type="button" data-sticker="🎉" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🎉</button>
+                        <button type="button" data-sticker="🚀" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🚀</button>
+                        <button type="button" data-sticker="❤️" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">❤️</button>
+                        <button type="button" data-sticker="🎯" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🎯</button>
+
+                        <!-- Werk, Studie & Taken -->
+                        <button type="button" data-sticker="💼" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">💼</button>
+                        <button type="button" data-sticker="💻" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">💻</button>
+                        <button type="button" data-sticker="📚" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">📚</button>
+                        <button type="button" data-sticker="📝" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">📝</button>
+                        <button type="button" data-sticker="📞" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">📞</button>
+                        <button type="button" data-sticker="📧" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">📧</button>
+
+                        <!-- Sport & Gezondheid -->
+                        <button type="button" data-sticker="🏋️" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🏋️</button>
+                        <button type="button" data-sticker="🏃" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🏃</button>
+                        <button type="button" data-sticker="⚽" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">⚽</button>
+                        <button type="button" data-sticker="🧘" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🧘</button>
+                        <button type="button" data-sticker="🚴" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🚴</button>
+                        <button type="button" data-sticker="💊" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">💊</button>
+
+                        <!-- Vrije Tijd & Ontspanning -->
+                        <button type="button" data-sticker="☕" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">☕</button>
+                        <button type="button" data-sticker="🍕" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🍕</button>
+                        <button type="button" data-sticker="🛒" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🛒</button>
+                        <button type="button" data-sticker="🎮" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🎮</button>
+                        <button type="button" data-sticker="🎬" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🎬</button>
+                        <button type="button" data-sticker="✈️" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">✈️</button>
+                        <button type="button" data-sticker="🎵" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🎵</button>
+                        <button type="button" data-sticker="🪴" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🪴</button>
+                        <button type="button" data-sticker="🐕" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🐕</button>
+                        <button type="button" data-sticker="🍻" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🍻</button>
+                        <button type="button" data-sticker="🎂" class="sticker-opt text-lg p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center">🎂</button>
+                    </div>
+                    <input type="hidden" id="item-input-sticker" value="">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Notities</label>
+                    <textarea id="item-input-notes" rows="2" placeholder="Extra details of informatie..." class="w-full p-2.5 border border-gray-300 rounded-xl text-sm"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-3 border-t">
+                    <button type="button" id="btn-cancel-modal" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition">Annuleren</button>
+                    <button type="submit" class="px-5 py-2 custom-btn-primary rounded-xl text-sm font-bold shadow-md transition">Opslaan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const DAYS_NL = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag'];
+        
+        const DEFAULT_CATEGORIES = [
+            { id: 'cat_work', name: 'Werk / Studie', color: '#3b82f6' },
+            { id: 'cat_personal', name: 'Persoonlijk', color: '#10b981' },
+            { id: 'cat_sport', name: 'Sport & Gezondheid', color: '#f97316' },
+            { id: 'cat_important', name: 'Belangrijk', color: '#ef4444' },
+            { id: 'cat_social', name: 'Sociaal', color: '#8b5cf6' }
+        ];
+
+        const DEFAULT_SETTINGS = {
+            bgColor: '#f8fafc',
+            cardColor: '#ffffff',
+            textColor: '#0f172a',
+            accentColor: '#6366f1',
+            headerBg1: '#4f46e5',
+            headerBg2: '#7c3aed',
+            titleText: 'Mijn Unieke Weekplanner',
+            userName: 'Welkom terug!',
+            avatarImg: 'https://placehold.co/120x120/6366f1/ffffff?text=U',
+            avatarShape: 'rounded-full',
+            profileBorderColor: '#ffffff',
+            showSpotlight: true,
+            radius: '16px',
+            borderStyle: 'solid',
+            font: 'font-inter',
+            categories: DEFAULT_CATEGORIES
+        };
+
+        const PRESETS = {
+            pastel: {
+                bgColor: '#fdf2f8',
+                cardColor: '#ffffff',
+                textColor: '#831843',
+                accentColor: '#ec4899',
+                headerBg1: '#f472b6',
+                headerBg2: '#c084fc',
+                radius: '28px',
+                borderStyle: 'solid',
+                font: 'font-quicksand'
+            },
+            cyberpunk: {
+                bgColor: '#0f172a',
+                cardColor: '#1e293b',
+                textColor: '#f8fafc',
+                accentColor: '#facc15',
+                headerBg1: '#06b6d4',
+                headerBg2: '#d946ef',
+                radius: '0px',
+                borderStyle: 'glow',
+                font: 'font-spacemono'
+            },
+            sunset: {
+                bgColor: '#fff7ed',
+                cardColor: '#ffffff',
+                textColor: '#431407',
+                accentColor: '#f97316',
+                headerBg1: '#ea580c',
+                headerBg2: '#e11d48',
+                radius: '16px',
+                borderStyle: 'solid',
+                font: 'font-poppins'
+            },
+            dark: {
+                bgColor: '#090d16',
+                cardColor: '#131c2e',
+                textColor: '#e2e8f0',
+                accentColor: '#3b82f6',
+                headerBg1: '#1e293b',
+                headerBg2: '#0f172a',
+                radius: '12px',
+                borderStyle: 'solid',
+                font: 'font-inter'
+            },
+            paper: {
+                bgColor: '#fef3c7',
+                cardColor: '#fffbeb',
+                textColor: '#78350f',
+                accentColor: '#b45309',
+                headerBg1: '#d97706',
+                headerBg2: '#92400e',
+                radius: '8px',
+                borderStyle: 'dashed',
+                font: 'font-caveat'
+            },
+            neon: {
+                bgColor: '#050505',
+                cardColor: '#121212',
+                textColor: '#ffffff',
+                accentColor: '#a855f7',
+                headerBg1: '#ec4899',
+                headerBg2: '#8b5cf6',
+                radius: '16px',
+                borderStyle: 'glow',
+                font: 'font-montserrat'
+            }
+        };
+
+        let state = {
+            currentWeekOffset: 0,
+            selectedCategoryFilter: 'all',
+            items: [],
+            settings: { ...DEFAULT_SETTINGS }
+        };
+
+        function loadState() {
+            try {
+                const savedItems = localStorage.getItem('planner_items_v4');
+                const savedSettings = localStorage.getItem('planner_settings_v4');
+                if (savedItems) state.items = JSON.parse(savedItems);
+                if (savedSettings) state.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) };
+                
+                if (!state.settings.categories || state.settings.categories.length === 0) {
+                    state.settings.categories = [...DEFAULT_CATEGORIES];
+                }
+            } catch (e) {
+                console.error("Fout bij laden van opgeslagen gegevens:", e);
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem('planner_items_v4', JSON.stringify(state.items));
+                localStorage.setItem('planner_settings_v4', JSON.stringify(state.settings));
+            } catch (e) {
+                console.error("Fout bij opslaan van gegevens:", e);
+            }
+        }
+
+        function getStartOfWeek(offset = 0) {
+            const now = new Date();
+            const day = now.getDay();
+            const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(now.setDate(diff));
+            monday.setDate(monday.getDate() + (offset * 7));
+            monday.setHours(0,0,0,0);
+            return monday;
+        }
+
+        function formatWeekLabel(startDate) {
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + 6);
+            const options = { day: 'numeric', month: 'short' };
+            return `${startDate.toLocaleDateString('nl-NL', options)} - ${endDate.toLocaleDateString('nl-NL', options)}`;
+        }
+
+        function getWeekKey(date) {
+            const d = new Date(date);
+            d.setHours(0, 0, 0, 0);
+            d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+            const yearStart = new Date(d.getFullYear(), 0, 1);
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return `${d.getFullYear()}-W${weekNo}`;
+        }
+
+        function getTodayIndexInWeek() {
+            const day = new Date().getDay();
+            return day === 0 ? 6 : day - 1;
+        }
+
+        function renderCategoryManager() {
+            const listContainer = document.getElementById('category-manager-list');
+            const selectContainer = document.getElementById('item-input-category');
+            const filterContainer = document.getElementById('category-filter-bar');
+
+            if (!listContainer || !selectContainer || !filterContainer) return;
+
+            listContainer.innerHTML = '';
+            state.settings.categories.forEach((cat, index) => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-2 bg-gray-50 p-2 rounded-xl border border-gray-200/80';
+                item.innerHTML = `
+                    <input type="color" value="${cat.color}" class="cat-color-input w-6 h-6 rounded-lg cursor-pointer border border-gray-300 p-0 shrink-0" data-index="${index}">
+                    <input type="text" value="${escapeHtml(cat.name)}" class="cat-name-input flex-1 p-1 bg-transparent text-xs font-semibold focus:bg-white rounded border-b border-transparent focus:border-indigo-400 outline-none" data-index="${index}">
+                    <button type="button" class="btn-delete-cat text-gray-400 hover:text-rose-600 p-1 transition" data-index="${index}" title="Verwijder">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                    </button>
+                `;
+                listContainer.appendChild(item);
+            });
+
+            listContainer.querySelectorAll('.cat-color-input').forEach(inp => {
+                inp.addEventListener('input', (e) => {
+                    const idx = parseInt(e.target.dataset.index);
+                    state.settings.categories[idx].color = e.target.value;
+                    saveState();
+                    renderCategoryManager();
+                    renderPlanner();
+                });
+            });
+
+            listContainer.querySelectorAll('.cat-name-input').forEach(inp => {
+                inp.addEventListener('change', (e) => {
+                    const idx = parseInt(e.target.dataset.index);
+                    state.settings.categories[idx].name = e.target.value.trim() || 'Categorie';
+                    saveState();
+                    renderCategoryManager();
+                    renderPlanner();
+                });
+            });
+
+            listContainer.querySelectorAll('.btn-delete-cat').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.currentTarget.dataset.index);
+                    state.settings.categories.splice(idx, 1);
+                    saveState();
+                    renderCategoryManager();
+                    renderPlanner();
+                });
+            });
+
+            selectContainer.innerHTML = `<option value="">Geen categorie</option>`;
+            state.settings.categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat.id;
+                opt.textContent = cat.name;
+                selectContainer.appendChild(opt);
+            });
+
+            filterContainer.innerHTML = `
+                <button class="cat-filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${state.selectedCategoryFilter === 'all' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-gray-200/60 hover:bg-gray-300 text-gray-700'}" data-cat-id="all">
+                    <span>Alle</span>
+                </button>
+            `;
+
+            state.settings.categories.forEach(cat => {
+                const isSelected = state.selectedCategoryFilter === cat.id;
+                const btn = document.createElement('button');
+                btn.className = `cat-filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${isSelected ? 'text-white shadow-xs' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`;
+                if (isSelected) {
+                    btn.style.backgroundColor = cat.color;
+                }
+                btn.dataset.catId = cat.id;
+                btn.innerHTML = `
+                    <span class="w-2 h-2 rounded-full" style="background-color: ${cat.color}"></span>
+                    <span>${escapeHtml(cat.name)}</span>
+                `;
+                filterContainer.appendChild(btn);
+            });
+
+            filterContainer.querySelectorAll('.cat-filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.selectedCategoryFilter = btn.dataset.catId;
+                    renderCategoryManager();
+                    renderPlanner();
+                });
+            });
+        }
+
+        function applySettingsUI() {
+            const s = state.settings;
+            const root = document.documentElement;
+
+            root.style.setProperty('--bg-main', s.bgColor);
+            root.style.setProperty('--card-bg', s.cardColor);
+            root.style.setProperty('--text-main', s.textColor);
+            root.style.setProperty('--accent-color', s.accentColor);
+            root.style.setProperty('--accent-hover', adjustColorBrightness(s.accentColor, -20));
+            root.style.setProperty('--header-bg', `linear-gradient(135deg, ${s.headerBg1} 0%, ${s.headerBg2} 100%)`);
+            root.style.setProperty('--radius-val', s.radius);
+            root.style.setProperty('--profile-border-color', s.profileBorderColor || '#ffffff');
+            
+            if (s.borderStyle === 'glow') {
+                root.style.setProperty('--border-style-val', 'solid');
+                root.style.setProperty('--border-width-val', '1px');
+                root.style.setProperty('--card-border-color', s.accentColor);
+                root.style.setProperty('--shadow-val', `0 0 15px ${s.accentColor}40`);
+            } else {
+                root.style.setProperty('--border-style-val', s.borderStyle);
+                root.style.setProperty('--border-width-val', s.borderStyle === 'double' ? '3px' : '1px');
+                root.style.setProperty('--card-border-color', adjustColorBrightness(s.cardColor, -15));
+                root.style.setProperty('--shadow-val', '0 4px 6px -1px rgb(0 0 0 / 0.1)');
+            }
+
+            document.body.className = `min-h-screen flex flex-col transition-colors duration-300 ${s.font}`;
+
+            const avatarImg = document.getElementById('header-avatar-img');
+            avatarImg.src = s.avatarImg;
+            avatarImg.className = `profile-avatar-frame w-14 h-14 md:w-16 md:h-16 object-cover border-2 shadow-md transition-all duration-300 ${s.avatarShape || 'rounded-full'}`;
+
+            document.getElementById('header-greeting-text').innerText = s.userName || 'Welkom terug!';
+            document.getElementById('header-subtitle-text').innerText = s.titleText || 'Mijn Unieke Weekplanner';
+
+            document.getElementById('setting-user-name').value = s.userName || '';
+            document.getElementById('setting-title-text').value = s.titleText || '';
+            document.getElementById('color-bg').value = s.bgColor;
+            document.getElementById('color-card').value = s.cardColor;
+            document.getElementById('color-text').value = s.textColor;
+            document.getElementById('color-accent').value = s.accentColor;
+            document.getElementById('color-header-1').value = s.headerBg1;
+            document.getElementById('color-header-2').value = s.headerBg2;
+            document.getElementById('color-profile-border').value = s.profileBorderColor || '#ffffff';
+            document.getElementById('setting-avatar-shape').value = s.avatarShape || 'rounded-full';
+            document.getElementById('setting-show-spotlight').checked = s.showSpotlight !== false;
+            document.getElementById('setting-radius').value = s.radius;
+            document.getElementById('setting-border-style').value = s.borderStyle;
+            document.getElementById('setting-font').value = s.font;
+        }
+
+        function adjustColorBrightness(hex, percent) {
+            let num = parseInt(hex.replace('#',''), 16),
+            amt = Math.round(2.55 * percent),
+            R = (num >> 16) + amt,
+            G = (num >> 8 & 0x00FF) + amt,
+            B = (num & 0x0000FF) + amt;
+            return '#' + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255)).toString(16).slice(1);
+        }
+
+        function renderTodaySpotlight(weekKey) {
+            const container = document.getElementById('today-spotlight-container');
+            
+            if (!state.settings.showSpotlight) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+
+            const todayIndex = getTodayIndexInWeek();
+            const todayDate = new Date();
+            const formattedDate = todayDate.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+
+            let todayItems = state.items.filter(t => t.weekKey === weekKey && t.dayIndex === todayIndex);
+            if (state.selectedCategoryFilter !== 'all') {
+                todayItems = todayItems.filter(t => t.categoryId === state.selectedCategoryFilter);
+            }
+
+            container.innerHTML = `
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b pb-4 mb-4 border-gray-200/50">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center text-2xl font-black shrink-0">
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="uppercase tracking-wider text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">Vandaag Spotlight</span>
+                                <span class="text-xs opacity-75 font-medium">${formattedDate}</span>
+                            </div>
+                            <h2 class="text-xl md:text-2xl font-extrabold mt-0.5">${DAYS_NL[todayIndex]}</h2>
+                        </div>
+                    </div>
+
+                    <button class="btn-add-today-spotlight px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold text-xs flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-plus"></i> Item Toevoegen
+                    </button>
+                </div>
+
+                <div>
+                    <div id="today-spotlight-items-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        ${todayItems.length === 0 ? `
+                            <div class="col-span-full py-4 text-center text-sm text-gray-400 border-2 border-dashed border-gray-200/70 rounded-xl">
+                                <i class="fa-regular fa-face-smile text-lg mb-1 block"></i>
+                                Geen items gepland voor vandaag. Geniet van je dag!
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+            const listEl = container.querySelector('#today-spotlight-items-list');
+            todayItems.sort((a,b) => (a.time || '99:99').localeCompare(b.time || '99:99')).forEach(item => {
+                listEl.appendChild(createItemElement(item));
+            });
+
+            container.querySelector('.btn-add-today-spotlight').addEventListener('click', () => {
+                openItemModal(null, todayIndex);
+            });
+        }
+
+        function renderPlanner() {
+            const container = document.getElementById('planner-grid-container');
+            container.innerHTML = '';
+
+            const startOfWeek = getStartOfWeek(state.currentWeekOffset);
+            const weekKey = getWeekKey(startOfWeek);
+            const todayIndex = getTodayIndexInWeek();
+            const isCurrentRealWeek = state.currentWeekOffset === 0;
+
+            document.getElementById('current-week-label').innerText = formatWeekLabel(startOfWeek);
+
+            renderTodaySpotlight(weekKey);
+
+            container.className = "flex flex-col gap-4";
+
+            // Standaard volgorde (0: Maandag t/m 6: Zondag)
+            let dayIndices = [0, 1, 2, 3, 4, 5, 6];
+
+            // Als Spotlight actief is, plaatsen we de reeds verstreken dagen (vorige dagen) ONDERAAN
+            if (isCurrentRealWeek && state.settings.showSpotlight) {
+                const remainingDays = dayIndices.filter(i => i !== todayIndex);
+                const futureDays = remainingDays.filter(i => i > todayIndex);
+                const pastDays = remainingDays.filter(i => i < todayIndex);
+                
+                dayIndices = [...futureDays, ...pastDays];
+            }
+
+            let totalItems = 0;
+
+            dayIndices.forEach(i => {
+                const dayDate = new Date(startOfWeek);
+                dayDate.setDate(dayDate.getDate() + i);
+                
+                const isToday = isCurrentRealWeek && (i === todayIndex);
+                let dayItems = state.items.filter(t => t.weekKey === weekKey && t.dayIndex === i);
+                
+                if (state.selectedCategoryFilter !== 'all') {
+                    dayItems = dayItems.filter(t => t.categoryId === state.selectedCategoryFilter);
+                }
+
+                totalItems += dayItems.length;
+
+                const dayCard = document.createElement('div');
+                dayCard.className = `custom-card flex flex-col p-4 transition-all duration-200 ${isToday ? 'ring-2 ring-indigo-500 shadow-lg' : ''}`;
+                dayCard.dataset.dayIndex = i;
+
+                const dateNum = dayDate.getDate();
+                const monthName = dayDate.toLocaleDateString('nl-NL', { month: 'short' });
+
+                dayCard.innerHTML = `
+                    <div class="flex items-center justify-between border-b pb-2 mb-3 border-gray-200/40">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-extrabold text-base md:text-lg">${DAYS_NL[i]}</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-black/5 font-semibold">${dateNum} ${monthName}</span>
+                            ${isToday ? '<span class="text-[10px] bg-indigo-600 text-white font-bold px-1.5 py-0.5 rounded-md shadow-xs animate-pulse">VANDAAG</span>' : ''}
+                        </div>
+                        <button class="btn-add-item-day text-xs w-6 h-6 rounded-full flex items-center justify-center hover:bg-black/10 transition" data-day="${i}" title="Item toevoegen">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+
+                    <div class="item-drop-zone flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 min-h-[60px]" data-day="${i}">
+                        ${dayItems.length === 0 ? `
+                            <div class="col-span-full py-3 flex items-center justify-center text-center border-2 border-dashed border-gray-200/60 rounded-xl text-gray-400 opacity-60">
+                                <i class="fa-regular fa-calendar-plus text-sm mr-2"></i>
+                                <span class="text-xs">Geen items gepland</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+
+                container.appendChild(dayCard);
+
+                const dropZone = dayCard.querySelector('.item-drop-zone');
+                dayItems.sort((a,b) => (a.time || '99:99').localeCompare(b.time || '99:99')).forEach(item => {
+                    dropZone.appendChild(createItemElement(item));
+                });
+
+                setupDropZone(dropZone, i, weekKey);
+            });
+
+            // Tel wel alle items van de week mee voor het totaal-label
+            const allWeekItems = state.items.filter(t => t.weekKey === weekKey);
+            document.getElementById('total-items-badge').innerText = `${allWeekItems.length} Items deze week`;
+        }
+
+        function createItemElement(item) {
+            const itemEl = document.createElement('div');
+            itemEl.className = `item-card relative overflow-hidden flex rounded-xl border border-gray-200/80 bg-white/70 backdrop-blur-sm cursor-grab active:cursor-grabbing shadow-sm hover:shadow transition-all group ${item.completed ? 'completed-strike' : ''}`;
+            itemEl.draggable = true;
+            itemEl.dataset.itemId = item.id;
+
+            const catObj = state.settings.categories.find(c => c.id === item.categoryId);
+            const catColor = catObj ? catObj.color : '#94a3b8';
+            const catName = catObj ? catObj.name : 'Overig';
+
+            let priorityBg = 'bg-gray-300';
+            let priorityTitle = 'Geen';
+            if (item.priority === 'low') { priorityBg = 'bg-emerald-400'; priorityTitle = 'Laag'; }
+            if (item.priority === 'medium') { priorityBg = 'bg-amber-400'; priorityTitle = 'Middel'; }
+            if (item.priority === 'high') { priorityBg = 'bg-rose-500'; priorityTitle = 'Hoog'; }
+
+            let timeDisplay = '';
+            if (item.time) {
+                timeDisplay = item.endTime ? `${item.time} - ${item.endTime}` : item.time;
+            }
+
+            itemEl.innerHTML = `
+                <div class="category-vertical-ribbon px-1 py-2 text-white shrink-0 font-bold tracking-wider" style="background-color: ${catColor}; shadow: inset -1px 0 2px rgba(0,0,0,0.1);">
+                    ${escapeHtml(catName)}
+                </div>
+
+                <div class="flex-1 p-3 flex items-start justify-between gap-2 min-w-0">
+                    <div class="flex items-start space-x-2.5 min-w-0 flex-1">
+                        <button class="btn-toggle-complete mt-0.5 shrink-0 w-4 h-4 rounded border border-gray-400 flex items-center justify-center transition ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'hover:border-indigo-500'}">
+                            ${item.completed ? '<i class="fa-solid fa-check text-[10px]"></i>' : ''}
+                        </button>
+                        
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                ${item.sticker ? `<span class="text-sm">${item.sticker}</span>` : ''}
+                                <span class="font-bold text-xs md:text-sm truncate ${item.completed ? 'line-through text-gray-400' : ''}">${escapeHtml(item.title)}</span>
+                            </div>
+                            
+                            ${timeDisplay ? `
+                                <div class="flex items-center gap-2 mt-1 flex-wrap text-[11px]">
+                                    <span class="font-semibold text-gray-500 flex items-center gap-1">
+                                        <i class="fa-regular fa-clock text-[10px]"></i>${timeDisplay}
+                                    </span>
+                                </div>
+                            ` : ''}
+
+                            ${item.notes ? `<p class="text-[11px] text-gray-500 mt-1 line-clamp-2">${escapeHtml(item.notes)}</p>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-1 opacity-90 shrink-0">
+                        ${item.priority && item.priority !== 'none' ? `<span class="w-2 h-2 rounded-full ${priorityBg}" title="Prioriteit: ${priorityTitle}"></span>` : ''}
+                        <button class="btn-edit-item text-gray-400 hover:text-indigo-600 p-1 opacity-0 group-hover:opacity-100 transition">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
+                        <button class="btn-delete-item text-gray-400 hover:text-rose-600 p-1 opacity-0 group-hover:opacity-100 transition">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            itemEl.querySelector('.btn-toggle-complete').addEventListener('click', (e) => {
+                e.stopPropagation();
+                item.completed = !item.completed;
+                if (item.completed && typeof confetti === 'function') {
+                    confetti({ particleCount: 35, spread: 50, origin: { y: 0.7 } });
+                }
+                saveState();
+                renderPlanner();
+            });
+
+            itemEl.querySelector('.btn-edit-item').addEventListener('click', (e) => {
+                e.stopPropagation();
+                openItemModal(item);
+            });
+
+            itemEl.querySelector('.btn-delete-item').addEventListener('click', (e) => {
+                e.stopPropagation();
+                state.items = state.items.filter(t => t.id !== item.id);
+                saveState();
+                renderPlanner();
+            });
+
+            itemEl.addEventListener('dragstart', (e) => {
+                itemEl.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', item.id);
+            });
+
+            itemEl.addEventListener('dragend', () => {
+                itemEl.classList.remove('dragging');
+            });
+
+            return itemEl;
+        }
+
+        function setupDropZone(dropZone, dayIndex, weekKey) {
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over-zone');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('drag-over-zone');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over-zone');
+                const itemId = e.dataTransfer.getData('text/plain');
+                const item = state.items.find(t => t.id === itemId);
+                
+                if (item) {
+                    item.dayIndex = dayIndex;
+                    item.weekKey = weekKey;
+                    saveState();
+                    renderPlanner();
+                }
+            });
+        }
+
+        function openItemModal(item = null, defaultDay = 0) {
+            const modal = document.getElementById('item-modal');
+            const form = document.getElementById('item-form');
+            form.reset();
+
+            document.querySelectorAll('.sticker-opt').forEach(btn => btn.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50'));
+
+            if (item) {
+                document.getElementById('modal-item-title').innerText = "Item Bewerken";
+                document.getElementById('item-id').value = item.id;
+                document.getElementById('item-input-title').value = item.title;
+                document.getElementById('item-input-day').value = item.dayIndex;
+                document.getElementById('item-input-time').value = item.time || '';
+                document.getElementById('item-input-end-time').value = item.endTime || '';
+                document.getElementById('item-input-category').value = item.categoryId || '';
+                document.getElementById('item-input-priority').value = item.priority || 'none';
+                document.getElementById('item-input-sticker').value = item.sticker || '';
+                document.getElementById('item-input-notes').value = item.notes || '';
+
+                if (item.sticker !== undefined) {
+                    const activeStickerBtn = document.querySelector(`.sticker-opt[data-sticker="${item.sticker}"]`);
+                    if (activeStickerBtn) activeStickerBtn.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-50');
+                }
+            } else {
+                document.getElementById('modal-item-title').innerText = "Nieuw Item Inplannen";
+                document.getElementById('item-id').value = '';
+                document.getElementById('item-input-day').value = defaultDay;
+                document.getElementById('item-input-priority').value = 'none';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeItemModal() {
+            document.getElementById('item-modal').classList.add('hidden');
+        }
+
+        function toggleCustomizer(forceState = null) {
+            const customizerPanel = document.getElementById('customizer-panel');
+            const overlay = document.getElementById('customizer-overlay');
+            
+            const isCurrentlyHidden = customizerPanel.classList.contains('hidden');
+            const shouldShow = forceState !== null ? forceState : isCurrentlyHidden;
+
+            if (shouldShow) {
+                customizerPanel.classList.remove('hidden');
+                overlay.classList.remove('hidden');
+            } else {
+                customizerPanel.classList.add('hidden');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function initEventListeners() {
+            document.getElementById('btn-add-item-global').addEventListener('click', () => openItemModal(null, 0));
+            document.getElementById('btn-close-modal').addEventListener('click', closeItemModal);
+            document.getElementById('btn-cancel-modal').addEventListener('click', closeItemModal);
+
+            document.getElementById('btn-toggle-customizer').addEventListener('click', () => toggleCustomizer());
+            document.getElementById('btn-close-customizer').addEventListener('click', () => toggleCustomizer(false));
+            document.getElementById('customizer-overlay').addEventListener('click', () => toggleCustomizer(false));
+            
+            document.getElementById('header-avatar-container').addEventListener('click', () => {
+                toggleCustomizer(true);
+                document.getElementById('setting-avatar-input').focus();
+            });
+
+            document.getElementById('planner-grid-container').addEventListener('click', (e) => {
+                const addBtn = e.target.closest('.btn-add-item-day');
+                if (addBtn) {
+                    const day = parseInt(addBtn.dataset.day);
+                    openItemModal(null, day);
+                }
+            });
+
+            document.getElementById('btn-prev-week').addEventListener('click', () => {
+                state.currentWeekOffset--;
+                renderPlanner();
+            });
+
+            document.getElementById('btn-next-week').addEventListener('click', () => {
+                state.currentWeekOffset++;
+                renderPlanner();
+            });
+
+            document.getElementById('btn-today').addEventListener('click', () => {
+                state.currentWeekOffset = 0;
+                renderPlanner();
+            });
+
+            document.getElementById('btn-add-category').addEventListener('click', () => {
+                const nameInp = document.getElementById('new-cat-name');
+                const colorInp = document.getElementById('new-cat-color');
+                const catName = nameInp.value.trim();
+
+                if (catName) {
+                    const newCat = {
+                        id: 'cat_' + Date.now(),
+                        name: catName,
+                        color: colorInp.value
+                    };
+                    state.settings.categories.push(newCat);
+                    nameInp.value = '';
+                    saveState();
+                    renderCategoryManager();
+                    renderPlanner();
+                }
+            });
+
+            document.getElementById('setting-avatar-input').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        state.settings.avatarImg = evt.target.result;
+                        applySettingsUI();
+                        saveState();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            document.querySelectorAll('.sticker-opt').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.sticker-opt').forEach(b => b.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50'));
+                    btn.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-50');
+                    document.getElementById('item-input-sticker').value = btn.dataset.sticker;
+                });
+            });
+
+            document.getElementById('item-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const itemId = document.getElementById('item-id').value;
+                const startOfWeek = getStartOfWeek(state.currentWeekOffset);
+                const weekKey = getWeekKey(startOfWeek);
+
+                const itemData = {
+                    id: itemId || 'item_' + Date.now(),
+                    weekKey: weekKey,
+                    title: document.getElementById('item-input-title').value.trim(),
+                    dayIndex: parseInt(document.getElementById('item-input-day').value),
+                    time: document.getElementById('item-input-time').value,
+                    endTime: document.getElementById('item-input-end-time').value,
+                    categoryId: document.getElementById('item-input-category').value,
+                    priority: document.getElementById('item-input-priority').value,
+                    sticker: document.getElementById('item-input-sticker').value,
+                    notes: document.getElementById('item-input-notes').value.trim(),
+                    completed: false
+                };
+
+                if (itemId) {
+                    const idx = state.items.findIndex(t => t.id === itemId);
+                    if (idx !== -1) {
+                        itemData.completed = state.items[idx].completed;
+                        state.items[idx] = itemData;
+                    }
+                } else {
+                    state.items.push(itemData);
+                }
+
+                saveState();
+                renderPlanner();
+                closeItemModal();
+            });
+
+            document.getElementById('setting-user-name').addEventListener('input', (e) => { state.settings.userName = e.target.value; applySettingsUI(); saveState(); });
+            document.getElementById('setting-title-text').addEventListener('input', (e) => { state.settings.titleText = e.target.value; applySettingsUI(); saveState(); });
+            document.getElementById('color-bg').addEventListener('input', (e) => { state.settings.bgColor = e.target.value; applySettingsUI(); saveState(); });
+            document.getElementById('color-card').addEventListener('input', (e) => { state.settings.cardColor = e.target.value; applySettingsUI(); saveState(); });
+            document.getElementById('color-text').addEventListener('input', (e) => { state.settings.textColor = e.target.value; applySettingsUI(); saveState(); });
+            document.getElementById('color-accent').addEventListener('input', (e) => { state.settings.accentColor = e.target.value; applySettingsUI(); saveState(); });
+            document.getElementById('color-header-1').addEventListener('input', (e) => { state.settings.headerBg1 = e.target.value; applySettingsUI(); saveState(); });
+            document.getElementById('color-header-2').addEventListener('input', (e) => { state.settings.headerBg2 = e.target.value; applySettingsUI(); saveState(); });
+            document.getElementById('color-profile-border').addEventListener('input', (e) => { state.settings.profileBorderColor = e.target.value; applySettingsUI(); saveState(); });
+            document.getElementById('setting-avatar-shape').addEventListener('change', (e) => { state.settings.avatarShape = e.target.value; applySettingsUI(); saveState(); });
+            document.getElementById('setting-show-spotlight').addEventListener('change', (e) => { state.settings.showSpotlight = e.target.checked; renderPlanner(); saveState(); });
+            document.getElementById('setting-radius').addEventListener('change', (e) => { state.settings.radius = e.target.value; applySettingsUI(); saveState(); });
+            document.getElementById('setting-border-style').addEventListener('change', (e) => { state.settings.borderStyle = e.target.value; applySettingsUI(); saveState(); });
+            document.getElementById('setting-font').addEventListener('change', (e) => { state.settings.font = e.target.value; applySettingsUI(); saveState(); });
+
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const key = btn.dataset.preset;
+                    if (PRESETS[key]) {
+                        state.settings = { ...state.settings, ...PRESETS[key] };
+                        applySettingsUI();
+                        renderPlanner();
+                        saveState();
+                    }
+                });
+            });
+
+            document.getElementById('btn-export-json').addEventListener('click', () => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.setAttribute("href", dataStr);
+                downloadAnchor.setAttribute("download", `weekplanner_backup_${new Date().toISOString().slice(0,10)}.json`);
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                downloadAnchor.remove();
+            });
+
+            const fileInput = document.getElementById('import-file-input');
+            document.getElementById('btn-import-json-trigger').addEventListener('click', () => fileInput.click());
+            
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    try {
+                        const importedData = JSON.parse(evt.target.result);
+                        if (importedData.items || importedData.tasks) {
+                            state.items = importedData.items || importedData.tasks || [];
+                            if (importedData.settings) state.settings = { ...DEFAULT_SETTINGS, ...importedData.settings };
+                            applySettingsUI();
+                            renderCategoryManager();
+                            renderPlanner();
+                            saveState();
+                        }
+                    } catch (err) {
+                        console.error("Fout bij importeren van JSON:", err);
+                    }
+                };
+                reader.readAsText(file);
+            });
+
+            document.getElementById('btn-reset-data').addEventListener('click', () => {
+                localStorage.clear();
+                state.items = [];
+                state.settings = { ...DEFAULT_SETTINGS };
+                applySettingsUI();
+                renderCategoryManager();
+                renderPlanner();
+                saveState();
+            });
+        }
+
+        window.onload = function () {
+            loadState();
+            applySettingsUI();
+            renderCategoryManager();
+            renderPlanner();
+            initEventListeners();
+        };
+    </script>
+</body>
+</html>
