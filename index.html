@@ -355,9 +355,14 @@
                 </div>
             </main>
 
-            <!-- RECHTER SECTIE: WIDGETS + WIDGET-INSTELLINGENMENU -->
-            <aside id="right-widgets-container" class="w-full lg:w-80 shrink-0 flex flex-col space-y-4 sticky top-6">
-                <!-- Bovenste balkje met widget-instellingenknop -->
+            <!-- RECHTER SECTIE: WIDGETS + WIDGET-INSTELLINGENMENU ONDERAAN -->
+            <aside id="right-widgets-container" class="w-full lg:w-80 shrink-0 flex flex-col space-y-4">
+                <!-- 1. Widgets render gebied staat nu BOVENAAN -->
+                <div id="widgets-render-area" class="flex flex-col space-y-4"></div>
+
+                <hr class="border-gray-200/60 my-1">
+
+                <!-- 2. Bovenste balkje met widget-instellingenknop (nu ONDERAAN) -->
                 <div class="custom-card p-3 flex items-center justify-between shadow-sm">
                     <span class="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center gap-2">
                         <i class="fa-solid fa-puzzle-piece" style="color: var(--accent-color);"></i>
@@ -377,9 +382,6 @@
                     <p class="text-[11px] text-gray-400">Vink aan welke widgets je wilt tonen en gebruik de pijltjes om de volgorde te wijzigen:</p>
                     <div id="widget-manager-list" class="space-y-2"></div>
                 </div>
-
-                <!-- Widgets render gebied -->
-                <div id="widgets-render-area" class="flex flex-col space-y-4"></div>
             </aside>
 
         </div>
@@ -502,10 +504,11 @@
             { id: 'cat_social', name: 'Sociaal', color: '#8b5cf6' }
         ];
 
+        // Widgets nu voorzien van flexibele customClass eigenschappen voor betere customisatie
         const DEFAULT_WIDGETS = [
-            { id: 'notepad', title: 'Kladblok', enabled: true },
-            { id: 'customWidget', title: 'Boodschappenlijst', enabled: true },
-            { id: 'miniCalendar', title: 'Maandoverzicht', enabled: true }
+            { id: 'notepad', title: 'Kladblok', enabled: true, customClass: 'bg-amber-50/40 border-amber-200/60' },
+            { id: 'customWidget', title: 'Boodschappenlijst', enabled: true, customClass: 'bg-purple-50/30 border-purple-200/50' },
+            { id: 'miniCalendar', title: 'Maandoverzicht', enabled: true, customClass: 'bg-white' }
         ];
 
         const DEFAULT_SETTINGS = {
@@ -767,12 +770,12 @@
                         <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
                             <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
                                 <i class="fa-solid fa-note-sticky" style="color: var(--accent-color);"></i>
-                                <span>Kladblok</span>
+                                <span>${escapeHtml(w.title)}</span>
                             </h3>
                             <span class="text-[11px] text-gray-400 font-medium">Snel noteren</span>
                         </div>
                         <div class="flex-1 flex flex-col space-y-2">
-                            <textarea id="notepad-textarea" rows="5" placeholder="Typ hier snel je losse notities..." class="w-full p-3 text-xs bg-amber-50/40 border border-amber-200/60 rounded-xl focus:ring-2 focus:bg-white outline-none resize-y transition leading-relaxed shadow-inner" style="--tw-ring-color: var(--accent-color);">${escapeHtml(state.notepadContent)}</textarea>
+                            <textarea id="notepad-textarea" rows="5" placeholder="Typ hier snel je losse notities..." class="w-full p-3 text-xs ${w.customClass || ''} border rounded-xl focus:ring-2 focus:bg-white outline-none resize-y transition leading-relaxed shadow-inner" style="--tw-ring-color: var(--accent-color);">${escapeHtml(state.notepadContent)}</textarea>
                             <div class="flex items-center justify-between text-[11px] text-gray-400 px-1">
                                 <span id="notepad-status">Wordt automatisch opgeslagen</span>
                                 <button type="button" id="btn-clear-notepad" class="hover:text-rose-600 transition font-medium">Wis</button>
@@ -804,12 +807,12 @@
                         <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
                             <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
                                 <i id="custom-widget-icon-el" class="fa-solid ${state.settings.customWidgetIcon || 'fa-basket-shopping'}" style="color: var(--accent-color);"></i>
-                                <span id="custom-widget-title-display">${escapeHtml(state.settings.customWidgetTitle || 'Boodschappenlijst')}</span>
+                                <span id="custom-widget-title-display">${escapeHtml(w.title || state.settings.customWidgetTitle || 'Boodschappenlijst')}</span>
                             </h3>
                             <span class="text-[11px] text-gray-400 font-medium">Eigen widget</span>
                         </div>
                         <div class="flex-1 flex flex-col space-y-2">
-                            <textarea id="custom-widget-textarea" rows="5" placeholder="Typ hier je lijstje..." class="w-full p-3 text-xs bg-purple-50/30 border border-purple-200/50 rounded-xl focus:ring-2 focus:bg-white outline-none resize-y transition leading-relaxed shadow-inner" style="--tw-ring-color: var(--accent-color);">${escapeHtml(state.customWidgetContent)}</textarea>
+                            <textarea id="custom-widget-textarea" rows="5" placeholder="Typ hier je lijstje..." class="w-full p-3 text-xs ${w.customClass || ''} border rounded-xl focus:ring-2 focus:bg-white outline-none resize-y transition leading-relaxed shadow-inner" style="--tw-ring-color: var(--accent-color);">${escapeHtml(state.customWidgetContent)}</textarea>
                             <div class="flex items-center justify-between text-[11px] text-gray-400 px-1">
                                 <span id="custom-widget-status">Wordt automatisch opgeslagen</span>
                                 <button type="button" id="btn-clear-custom-widget" class="hover:text-rose-600 transition font-medium">Wis</button>
@@ -836,7 +839,7 @@
                 }
                 else if (w.id === 'miniCalendar') {
                     const card = document.createElement('div');
-                    card.className = 'custom-card p-4 md:p-5 flex flex-col space-y-3 shadow-md';
+                    card.className = `custom-card p-4 md:p-5 flex flex-col space-y-3 shadow-md ${w.customClass || ''}`;
                     
                     const now = new Date();
                     const year = now.getFullYear();
@@ -852,7 +855,7 @@
                         <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
                             <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
                                 <i class="fa-solid fa-calendar-days" style="color: var(--accent-color);"></i>
-                                <span>${monthNames[month]} ${year}</span>
+                                <span>${escapeHtml(w.title)} (${monthNames[month]} ${year})</span>
                             </h3>
                             <span class="text-[11px] text-gray-400 font-medium">Mini kalender</span>
                         </div>
