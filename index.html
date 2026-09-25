@@ -174,7 +174,7 @@
 
     <!-- HOOFDAPPLICATIE -->
     <div id="app-screen" class="flex-1 flex flex-col hidden">
-        <!-- APP HEADER (E-mailbadge is hier verwijderd) -->
+        <!-- APP HEADER -->
         <header id="planner-header" class="custom-header p-4 md:p-6 shadow-lg relative overflow-hidden transition-all duration-300">
             <div class="w-full flex flex-col lg:flex-row items-center justify-between gap-4 relative z-10 px-2 md:px-4">
                 
@@ -201,7 +201,7 @@
 
                 <div class="flex items-center space-x-2">
                     <button id="btn-add-item-global" class="px-4 py-2.5 bg-white text-gray-900 hover:bg-opacity-90 rounded-xl text-sm font-bold flex items-center gap-2 transition shadow-md">
-                        <i class="fa-solid fa-plus text-indigo-600"></i>
+                        <i class="fa-solid fa-plus" style="color: var(--accent-color);"></i>
                         <span class="hidden sm:inline">Item Toevoegen</span>
                     </button>
                     <button onclick="logoutUser()" class="px-3 py-2.5 bg-red-500/80 hover:bg-red-600 text-white rounded-xl text-sm font-bold transition shadow-md" title="Uitloggen">
@@ -211,16 +211,16 @@
             </div>
         </header>
 
-        <!-- MAIN CONTAINER MET GRID VOOR AGENDA + KLADBLOK RECHTS -->
+        <!-- MAIN CONTAINER -->
         <div class="flex-1 max-w-7xl w-full mx-auto px-2 md:px-4 py-6 flex flex-col lg:flex-row gap-6 relative items-start">
 
             <div id="customizer-overlay" class="fixed inset-0 bg-black/40 z-30 hidden backdrop-blur-xs transition-opacity"></div>
 
-            <!-- CUSTOMIZER PANEL (Instellingen) -->
+            <!-- CUSTOMIZER PANEL -->
             <aside id="customizer-panel" class="hidden fixed lg:relative right-0 lg:right-auto top-0 lg:top-auto h-full lg:h-auto w-80 lg:w-80 shrink-0 custom-card p-5 space-y-6 z-40 max-h-screen lg:max-h-[85vh] overflow-y-auto shadow-2xl lg:shadow-md">
                 <div class="flex items-center justify-between border-b pb-3 border-gray-200/50">
                     <h2 class="font-bold text-lg flex items-center gap-2">
-                        <i class="fa-solid fa-wand-magic-sparkles text-indigo-500"></i>
+                        <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-color);"></i>
                         <span>Instellingen &amp; Stijl</span>
                     </h2>
                     <button id="btn-close-customizer" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition" title="Sluiten">
@@ -231,7 +231,7 @@
                 <div class="space-y-3 pt-1">
                     <label class="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center justify-between">
                         <span>Profiel &amp; Naam</span>
-                        <i class="fa-solid fa-user-gear text-xs text-indigo-500"></i>
+                        <i class="fa-solid fa-user-gear text-xs" style="color: var(--accent-color);"></i>
                     </label>
                     <div>
                         <span class="text-xs font-medium block mb-1">Jouw Naam</span>
@@ -260,13 +260,13 @@
                 <div class="space-y-3 pt-2 border-t border-gray-200/50">
                     <label class="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center justify-between">
                         <span>Categorie Beheer</span>
-                        <i class="fa-solid fa-tags text-xs text-indigo-500"></i>
+                        <i class="fa-solid fa-tags text-xs" style="color: var(--accent-color);"></i>
                     </label>
                     <div id="category-manager-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
                     <div class="flex items-center gap-2 pt-1">
                         <input type="text" id="new-cat-name" placeholder="Nieuwe categorie..." class="flex-1 p-2 rounded-xl border border-gray-300 text-xs">
                         <input type="color" id="new-cat-color" value="#3b82f6" class="w-8 h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5 shrink-0">
-                        <button id="btn-add-category" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition">
+                        <button id="btn-add-category" class="px-3 py-2 text-white font-bold rounded-xl text-xs transition custom-btn-primary">
                             <i class="fa-solid fa-plus"></i>
                         </button>
                     </div>
@@ -276,27 +276,27 @@
                     <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Focus op Vandaag</label>
                     <div class="flex items-center justify-between p-2 bg-gray-50/50 rounded-xl border border-gray-200/50">
                         <span class="text-xs font-medium">"Vandaag Spotlight" tonen</span>
-                        <input type="checkbox" id="setting-show-spotlight" class="w-4 h-4 accent-indigo-600 rounded cursor-pointer" checked>
+                        <input type="checkbox" id="setting-show-spotlight" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--accent-color);" checked>
                     </div>
                 </div>
 
                 <div class="space-y-2 pt-2 border-t border-gray-200/50">
                     <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Thema Presets</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <button data-preset="emmy" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-indigo-500 transition flex items-center gap-2">
+                        <button data-preset="emmy" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-purple-500 transition flex items-center gap-2">
                             <span class="w-3 h-3 rounded-full bg-purple-600 inline-block"></span> Emmy
                         </button>
-                        <button data-preset="isabel" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-indigo-500 transition flex items-center gap-2">
+                        <button data-preset="isabel" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-teal-500 transition flex items-center gap-2">
                             <span class="w-3 h-3 rounded-full bg-teal-500 inline-block"></span> Isabel
                         </button>
-                        <button data-preset="floris" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-indigo-500 transition flex items-center gap-2">
+                        <button data-preset="floris" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-blue-500 transition flex items-center gap-2">
                             <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span> Floris
                         </button>
-                        <button data-preset="olga" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-indigo-500 transition flex items-center gap-2">
+                        <button data-preset="olga" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-rose-400 transition flex items-center gap-2">
                             <span class="w-3 h-3 rounded-full bg-rose-400 inline-block"></span> Olga
                         </button>
-                        <button data-preset="custom" class="preset-btn col-span-2 p-2 border rounded-xl text-center text-xs font-bold hover:border-indigo-500 transition flex items-center justify-center gap-2 bg-gray-50 border-dashed">
-                            <span class="w-3 h-3 rounded-full bg-indigo-600 inline-block"></span> ⚙️ Jouw Custom Thema
+                        <button data-preset="custom" class="preset-btn col-span-2 p-2 border rounded-xl text-center text-xs font-bold hover:border-purple-500 transition flex items-center justify-center gap-2 bg-gray-50 border-dashed">
+                            <span class="w-3 h-3 rounded-full bg-purple-600 inline-block"></span> ⚙️ Jouw Custom Thema
                         </button>
                     </div>
                 </div>
@@ -330,7 +330,7 @@
                 </div>
             </aside>
 
-            <!-- HOOFDAGEN LIJST (Links uitgelijnd, breder gemaakt) -->
+            <!-- HOOFDAGEN LIJST -->
             <main class="flex-1 flex flex-col space-y-5 min-w-0 w-full lg:w-auto">
                 
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs opacity-90 px-1">
@@ -359,25 +359,25 @@
                     <h1 id="main-greeting-heading" class="text-xl md:text-2xl font-extrabold tracking-tight">Goedemorgen Olga! 👋</h1>
                 </div>
 
-                <section id="today-spotlight-container" class="custom-card p-5 border-l-4 border-l-indigo-500 transition-all duration-300">
+                <section id="today-spotlight-container" class="custom-card p-5 border-l-4 transition-all duration-300" style="border-left-color: var(--accent-color);">
                 </section>
 
                 <div id="planner-grid-container" class="flex flex-col gap-4 transition-all duration-300">
                 </div>
             </main>
 
-            <!-- RECHTER SECTIE: KLADBLOK (Strak vormgegeven blok rechts) -->
+            <!-- RECHTER SECTIE: KLADBLOK -->
             <aside class="w-full lg:w-80 shrink-0 custom-card p-4 md:p-5 flex flex-col space-y-4 shadow-md sticky top-6">
                 <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
-                    <h3 class="font-bold text-base flex items-center gap-2 text-indigo-700">
-                        <i class="fa-solid fa-note-sticky text-indigo-500"></i>
+                    <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
+                        <i class="fa-solid fa-note-sticky" style="color: var(--accent-color);"></i>
                         <span>Kladblok</span>
                     </h3>
                     <span class="text-[11px] text-gray-400 font-medium">Snel noteren</span>
                 </div>
                 
                 <div class="flex-1 flex flex-col space-y-2">
-                    <textarea id="notepad-textarea" rows="12" placeholder="Typ hier snel je losse notities, gedachten of boodschappen..." class="w-full p-3 text-xs bg-amber-50/40 border border-amber-200/60 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none resize-y transition leading-relaxed shadow-inner"></textarea>
+                    <textarea id="notepad-textarea" rows="12" placeholder="Typ hier snel je losse notities, gedachten of boodschappen..." class="w-full p-3 text-xs bg-amber-50/40 border border-amber-200/60 rounded-xl focus:ring-2 focus:bg-white outline-none resize-y transition leading-relaxed shadow-inner" style="--tw-ring-color: var(--accent-color);"></textarea>
                     <div class="flex items-center justify-between text-[11px] text-gray-400 px-1">
                         <span id="notepad-status">Wordt automatisch opgeslagen</span>
                         <button type="button" id="btn-clear-notepad" class="hover:text-rose-600 transition font-medium">Wis kladblok</button>
@@ -392,7 +392,7 @@
             <div class="custom-card w-full max-w-md p-6 space-y-5 relative animate-in fade-in zoom-in duration-200">
                 <div class="flex items-center justify-between border-b pb-3 border-gray-200/50">
                     <h3 id="modal-item-title" class="font-bold text-lg flex items-center gap-2">
-                        <i class="fa-solid fa-pen-to-square text-indigo-500"></i>
+                        <i class="fa-solid fa-pen-to-square" style="color: var(--accent-color);"></i>
                         <span>Nieuw Item Inplannen</span>
                     </h3>
                     <button id="btn-close-modal" class="text-gray-400 hover:text-gray-600">
@@ -405,7 +405,7 @@
                     
                     <div>
                         <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Titel / Omschrijving</label>
-                        <input type="text" id="item-input-title" required placeholder="Wat wil je inplannen?" class="w-full p-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <input type="text" id="item-input-title" required placeholder="Wat wil je inplannen?" class="w-full p-3 border border-gray-300 rounded-xl text-sm focus:ring-2 outline-none" style="--tw-ring-color: var(--accent-color);">
                     </div>
 
                     <div>
@@ -439,7 +439,6 @@
                         </div>
                         <div>
                             <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Prioriteit</label>
-                            <!-- VERVANGEN: Standaard emojis gewisseld voor strakke FontAwesome / gekleurde icoontjes -->
                             <select id="item-input-priority" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm bg-white font-medium">
                                 <option value="none">Geen prioriteit</option>
                                 <option value="low">🟢 Laag</option>
@@ -451,7 +450,6 @@
 
                     <div>
                         <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Icoon / Sticker</label>
-                        <!-- VERVANGEN: Subtielere en mooiere selectie van iconen -->
                         <div id="sticker-picker" class="grid grid-cols-8 gap-1.5 max-h-36 overflow-y-auto p-1.5 border border-gray-200 rounded-xl bg-gray-50/50">
                             <button type="button" data-sticker="" class="sticker-opt text-xs p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center font-bold text-gray-400" title="Geen">✕</button>
                             <button type="button" data-sticker="★" class="sticker-opt text-sm p-1.5 rounded-lg border bg-white hover:bg-gray-100 flex items-center justify-center text-amber-500 font-bold">★</button>
@@ -727,7 +725,10 @@
                 selectContainer.innerHTML += `<option value="${cat.id}">${escapeHtml(cat.name)}</option>`;
             });
 
-            filterContainer.innerHTML = `<button class="cat-filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${state.selectedCategoryFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-200/60 text-gray-700'}" data-cat-id="all">Alle</button>`;
+            // GECORRIGEERD: "Alle" knop gebruikt nu dynamisch de accentkleur via inline style of variabele
+            const isAllSelected = state.selectedCategoryFilter === 'all';
+            filterContainer.innerHTML = `<button class="cat-filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${isAllSelected ? 'text-white' : 'bg-gray-200/60 text-gray-700'}" ${isAllSelected ? `style="background-color: var(--accent-color);"` : ''} data-cat-id="all">Alle</button>`;
+            
             state.settings.categories.forEach(cat => {
                 const isSelected = state.selectedCategoryFilter === cat.id;
                 filterContainer.innerHTML += `<button class="cat-filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${isSelected ? 'text-white' : 'bg-gray-100 text-gray-700'}" ${isSelected ? `style="background-color: ${cat.color}"` : ''} data-cat-id="${cat.id}"><span class="w-2 h-2 rounded-full" style="background-color: ${cat.color}"></span>${escapeHtml(cat.name)}</button>`;
@@ -773,13 +774,13 @@
             container.innerHTML = `
                 <div class="flex items-center justify-between border-b pb-4 mb-4 border-gray-200/50">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-xl bg-indigo-500/15 text-indigo-600 flex items-center justify-center text-lg font-black"><i class="fa-solid fa-star"></i></div>
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-black" style="background-color: color-mix(in srgb, var(--accent-color) 15%, transparent); color: var(--accent-color);"><i class="fa-solid fa-star"></i></div>
                         <div>
-                            <span class="uppercase tracking-wider text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">Vandaag Spotlight</span>
+                            <span class="uppercase tracking-wider text-[10px] font-bold px-2 py-0.5 rounded-md" style="background-color: color-mix(in srgb, var(--accent-color) 10%, transparent); color: var(--accent-color);">Vandaag Spotlight</span>
                             <h2 class="text-lg font-extrabold mt-0.5">${DAYS_NL[todayIndex]}</h2>
                         </div>
                     </div>
-                    <button class="btn-add-today-spotlight px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold text-xs"><i class="fa-solid fa-plus"></i> Item</button>
+                    <button class="btn-add-today-spotlight px-3 py-1.5 rounded-xl font-bold text-xs transition" style="background-color: color-mix(in srgb, var(--accent-color) 10%, transparent); color: var(--accent-color);"><i class="fa-solid fa-plus"></i> Item</button>
                 </div>
                 <div id="today-spotlight-items-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     ${todayItems.length === 0 ? '<div class="col-span-full py-2 text-center text-xs text-gray-400">Geen items gepland voor vandaag.</div>' : ''}
@@ -812,13 +813,18 @@
                 totalItems += dayItems.length;
 
                 const dayCard = document.createElement('div');
-                dayCard.className = `custom-card flex flex-col p-4 transition-all duration-200 ${isToday ? 'ring-2 ring-indigo-500 shadow-md' : ''}`;
+                // GECORRIGEERD: Vandaag rand gebruikt nu ook dynamisch var(--accent-color)
+                dayCard.className = `custom-card flex flex-col p-4 transition-all duration-200 ${isToday ? 'shadow-md' : ''}`;
+                if (isToday) {
+                    dayCard.style.boxShadow = '0 0 0 2px var(--accent-color)';
+                }
+
                 dayCard.innerHTML = `
                     <div class="flex items-center justify-between border-b pb-2 mb-3 border-gray-200/40">
                         <div class="flex items-center space-x-2">
                             <span class="font-extrabold text-base">${DAYS_NL[i]}</span>
                             <span class="text-xs px-2 py-0.5 rounded-full bg-black/5 font-semibold">${dayDate.getDate()} ${dayDate.toLocaleDateString('nl-NL', { month: 'short' })}</span>
-                            ${isToday ? '<span class="text-[10px] bg-indigo-600 text-white font-bold px-1.5 py-0.5 rounded-md">VANDAAG</span>' : ''}
+                            ${isToday ? '<span class="text-[10px] text-white font-bold px-1.5 py-0.5 rounded-md" style="background-color: var(--accent-color);">VANDAAG</span>' : ''}
                         </div>
                         <button class="btn-add-item-day text-xs w-6 h-6 rounded-full flex items-center justify-center hover:bg-black/10 transition" data-day="${i}"><i class="fa-solid fa-plus"></i></button>
                     </div>
@@ -934,7 +940,6 @@
             document.getElementById('btn-next-week').addEventListener('click', () => { state.currentWeekOffset++; renderPlanner(); });
             document.getElementById('btn-today').addEventListener('click', () => { state.currentWeekOffset = 0; renderPlanner(); });
 
-            // Kladblok logica
             const notepadTextarea = document.getElementById('notepad-textarea');
             notepadTextarea.addEventListener('input', () => {
                 state.notepadContent = notepadTextarea.value;
