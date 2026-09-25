@@ -141,36 +141,39 @@
 </head>
 <body class="min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- INLOG / REGISTRATIE SCHERM -->
-    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 hidden">
-        <div class="custom-card max-w-md w-full p-8 shadow-2xl">
+    <!-- INLOG / REGISTRATIE SCHERM (VAST GELEGE BEIGE / NEUTRAAL STIJL) -->
+    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#f7f4ee] backdrop-blur-sm p-4">
+        <div class="max-w-md w-full p-8 bg-white rounded-2xl shadow-xl border border-[#e6decb]">
             <div class="text-center mb-6">
-                <h1 id="auth-title" class="text-2xl font-bold">Inloggen bij Olgenda</h1>
-                <p class="text-sm text-gray-500 mt-1">Beheer je eigen privégegevens veilig in de cloud.</p>
+                <div class="inline-block p-3 rounded-2xl bg-[#f7f4ee] text-[#78614e] mb-3">
+                    <i class="fa-solid fa-calendar-check text-2xl"></i>
+                </div>
+                <h1 id="auth-title" class="text-2xl font-bold text-[#4a3b2c]">Inloggen bij Olgenda</h1>
+                <p class="text-xs text-[#8c7a6b] mt-1">Beheer je eigen privégegevens veilig in de cloud.</p>
             </div>
 
             <div id="auth-error" class="hidden mb-4 p-3 bg-red-100 text-red-700 rounded-xl text-sm font-medium"></div>
 
             <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">E-mailadres</label>
-                    <input type="email" id="auth-email" required class="w-full p-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+                    <label class="block text-xs font-bold uppercase text-[#8c7a6b] mb-1">E-mailadres</label>
+                    <input type="email" id="auth-email" required class="w-full p-3 bg-[#faf8f5] border border-[#e6decb] rounded-xl text-sm focus:ring-2 focus:ring-[#78614e] outline-none text-[#4a3b2c]">
                 </div>
                 <div>
                     <div class="flex items-center justify-between mb-1">
-                        <label class="block text-xs font-bold uppercase text-gray-500">Wachtwoord</label>
-                        <a href="#" onclick="forgotPassword(event)" class="text-xs text-purple-600 hover:underline font-semibold">Wachtwoord vergeten?</a>
+                        <label class="block text-xs font-bold uppercase text-[#8c7a6b]">Wachtwoord</label>
+                        <a href="#" onclick="forgotPassword(event)" class="text-xs text-[#78614e] hover:underline font-semibold">Wachtwoord vergeten?</a>
                     </div>
-                    <input type="password" id="auth-password" required class="w-full p-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+                    <input type="password" id="auth-password" required class="w-full p-3 bg-[#faf8f5] border border-[#e6decb] rounded-xl text-sm focus:ring-2 focus:ring-[#78614e] outline-none text-[#4a3b2c]">
                 </div>
-                <button type="submit" id="auth-submit-btn" class="w-full py-3 custom-btn-primary font-bold rounded-xl text-sm transition shadow-md">
+                <button type="submit" id="auth-submit-btn" class="w-full py-3 bg-[#5c4a38] hover:bg-[#4a3b2c] text-white font-bold rounded-xl text-sm transition shadow-md">
                     Inloggen
                 </button>
             </form>
 
             <div class="mt-6 text-center text-sm">
-                <span id="auth-switch-text" class="text-gray-500">Nog geen account?</span>
-                <button type="button" onclick="toggleAuthMode()" id="auth-switch-btn" class="text-purple-600 font-bold ml-1 hover:underline">
+                <span id="auth-switch-text" class="text-[#8c7a6b]">Nog geen account?</span>
+                <button type="button" onclick="toggleAuthMode()" id="auth-switch-btn" class="text-[#5c4a38] font-bold ml-1 hover:underline">
                     Maak er een aan
                 </button>
             </div>
