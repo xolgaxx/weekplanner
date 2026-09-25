@@ -141,7 +141,7 @@
 </head>
 <body class="min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- INLOG / REGISTRATIE SCHERM (VAST GELEGE BEIGE / NEUTRAAL STIJL) -->
+    <!-- INLOG / REGISTRATIE SCHERM -->
     <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#f7f4ee] backdrop-blur-sm p-4">
         <div class="max-w-md w-full p-8 bg-white rounded-2xl shadow-xl border border-[#e6decb]">
             <div class="text-center mb-6">
@@ -223,7 +223,7 @@
 
             <div id="customizer-overlay" class="fixed inset-0 bg-black/40 z-30 hidden backdrop-blur-xs transition-opacity"></div>
 
-            <!-- CUSTOMIZER PANEL -->
+            <!-- CUSTOMIZER PANEL (HOOFDINSTELLINGEN - NU OVERZICHTELIJKER) -->
             <aside id="customizer-panel" class="hidden fixed lg:relative right-0 lg:right-auto top-0 lg:top-auto h-full lg:h-auto w-80 lg:w-80 shrink-0 custom-card p-5 space-y-6 z-40 max-h-screen lg:max-h-[85vh] overflow-y-auto shadow-2xl lg:shadow-md">
                 <div class="flex items-center justify-between border-b pb-3 border-gray-200/50">
                     <h2 class="font-bold text-lg flex items-center gap-2">
@@ -262,16 +262,6 @@
                             <input type="color" id="color-profile-border" value="#ffffff" class="w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5">
                         </div>
                     </div>
-                </div>
-
-                <!-- WIDGET KOLOM BEHEER -->
-                <div class="space-y-3 pt-2 border-t border-gray-200/50">
-                    <label class="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center justify-between">
-                        <span>Rechterkolom Widgets</span>
-                        <i class="fa-solid fa-puzzle-piece text-xs" style="color: var(--accent-color);"></i>
-                    </label>
-                    <p class="text-[11px] text-gray-400">Vink aan welke widgets je wilt tonen en sleep of pas aan:</p>
-                    <div id="widget-manager-list" class="space-y-2"></div>
                 </div>
 
                 <div class="space-y-3 pt-2 border-t border-gray-200/50">
@@ -363,14 +353,35 @@
                     <h1 id="main-greeting-heading" class="text-xl md:text-2xl font-extrabold tracking-tight">Goedemorgen Olga! 👋</h1>
                 </div>
 
-                <!-- DOORLOPENDE AGENDA LIJST -->
                 <div id="planner-grid-container" class="flex flex-col gap-4 transition-all duration-300">
                 </div>
             </main>
 
-            <!-- RECHTER SECTIE: DYNAMISCHE WIDGET KOLOM -->
+            <!-- RECHTER SECTIE: WIDGETS + APART WIDGET-INSTELLINGENMENU -->
             <aside id="right-widgets-container" class="w-full lg:w-80 shrink-0 flex flex-col space-y-4 sticky top-6">
-                <!-- Wordt dynamisch opgebouwd op basis van instellingen -->
+                <!-- Bovenste balkje met widget-instellingenknop -->
+                <div class="custom-card p-3 flex items-center justify-between shadow-sm">
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center gap-2">
+                        <i class="fa-solid fa-puzzle-piece" style="color: var(--accent-color);"></i>
+                        <span>Widgets Beheer</span>
+                    </span>
+                    <button id="btn-toggle-widget-settings" class="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition text-xs" title="Widgets aanpassen">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+                </div>
+
+                <!-- Uitklapbaar widget-instellingenmenu (standaard verborgen) -->
+                <div id="widget-settings-dropdown" class="custom-card p-4 space-y-3 shadow-md hidden border border-purple-200">
+                    <div class="flex items-center justify-between border-b pb-2 border-gray-200/50">
+                        <span class="font-bold text-xs">Kies &amp; rangschik widgets</span>
+                        <button id="btn-close-widget-settings" class="text-gray-400 hover:text-gray-600 text-xs"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <p class="text-[11px] text-gray-400">Vink aan welke widgets je wilt tonen en gebruik de pijltjes om de volgorde te wijzigen:</p>
+                    <div id="widget-manager-list" class="space-y-2"></div>
+                </div>
+
+                <!-- De daadwerkelijke widgets komen hieronder -->
+                <div id="widgets-render-area" class="flex flex-col space-y-4"></div>
             </aside>
 
         </div>
@@ -744,7 +755,7 @@
         }
 
         function renderRightWidgets() {
-            const container = document.getElementById('right-widgets-container');
+            const container = document.getElementById('widgets-render-area');
             if (!container) return;
             container.innerHTML = '';
 
@@ -835,7 +846,7 @@
                     const monthNames = ['Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni', 'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December'];
                     
                     const firstDayIndex = new Date(year, month, 1).getDay();
-                    const adjustedFirstDay = firstDayIndex === 0 ? 6 : firstDayIndex - 1; // Maandag start
+                    const adjustedFirstDay = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
                     const daysInMonth = new Date(year, month + 1, 0).getDate();
                     const todayDate = now.getDate();
 
@@ -1092,6 +1103,15 @@
             document.getElementById('btn-cancel-modal').addEventListener('click', () => document.getElementById('item-modal').classList.add('hidden'));
             document.getElementById('header-avatar-container').addEventListener('click', () => document.getElementById('customizer-panel').classList.remove('hidden'));
             document.getElementById('btn-close-customizer').addEventListener('click', () => document.getElementById('customizer-panel').classList.add('hidden'));
+
+            // Widget instellingenmenu openen/sluiten
+            const widgetDropdown = document.getElementById('widget-settings-dropdown');
+            document.getElementById('btn-toggle-widget-settings').addEventListener('click', () => {
+                widgetDropdown.classList.toggle('hidden');
+            });
+            document.getElementById('btn-close-widget-settings').addEventListener('click', () => {
+                widgetDropdown.classList.add('hidden');
+            });
 
             document.getElementById('planner-grid-container').addEventListener('click', (e) => {
                 const addBtn = e.target.closest('.btn-add-item-day');
