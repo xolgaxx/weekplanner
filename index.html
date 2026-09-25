@@ -295,14 +295,6 @@
                 </div>
 
                 <div class="space-y-2 pt-2 border-t border-gray-200/50">
-                    <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Focus op Vandaag</label>
-                    <div class="flex items-center justify-between p-2 bg-gray-50/50 rounded-xl border border-gray-200/50">
-                        <span class="text-xs font-medium">"Vandaag Spotlight" tonen</span>
-                        <input type="checkbox" id="setting-show-spotlight" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--accent-color);" checked>
-                    </div>
-                </div>
-
-                <div class="space-y-2 pt-2 border-t border-gray-200/50">
                     <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Thema Presets</label>
                     <div class="grid grid-cols-2 gap-2">
                         <button data-preset="emmy" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-purple-500 transition flex items-center gap-2">
@@ -376,9 +368,7 @@
                     <h1 id="main-greeting-heading" class="text-xl md:text-2xl font-extrabold tracking-tight">Goedemorgen Olga! 👋</h1>
                 </div>
 
-                <section id="today-spotlight-container" class="custom-card p-5 border-l-4 transition-all duration-300" style="border-left-color: var(--accent-color);">
-                </section>
-
+                <!-- DOORLOPENDE AGENDA LIJST -->
                 <div id="planner-grid-container" class="flex flex-col gap-4 transition-all duration-300">
                 </div>
             </main>
@@ -556,7 +546,6 @@
             userName: 'Olga',
             avatarImg: 'https://placehold.co/120x120/6366f1/ffffff?text=U',
             avatarShape: 'rounded-full',
-            showSpotlight: true,
             customWidgetTitle: 'Boodschappenlijst',
             customWidgetIcon: 'fa-basket-shopping',
             radius: '16px',
@@ -809,9 +798,7 @@
             document.getElementById('color-card').value = s.cardColor;
             document.getElementById('color-text').value = s.textColor;
             document.getElementById('color-accent').value = s.accentColor;
-            document.getElementById('setting-show-spotlight').checked = s.showSpotlight !== false;
             
-            // Custom widget settings sync
             document.getElementById('setting-custom-widget-title').value = s.customWidgetTitle || 'Boodschappenlijst';
             document.getElementById('setting-custom-widget-icon').value = s.customWidgetIcon || 'fa-basket-shopping';
             document.getElementById('custom-widget-title-display').innerText = s.customWidgetTitle || 'Boodschappenlijst';
@@ -820,69 +807,44 @@
             updateLogoTheme();
         }
 
-        function renderTodaySpotlight(weekKey) {
-            const container = document.getElementById('today-spotlight-container');
-            const greetingContainer = document.getElementById('greeting-banner-container');
-            if (!state.settings.showSpotlight) { container.classList.add('hidden'); greetingContainer.classList.add('hidden'); return; }
-            container.classList.remove('hidden'); greetingContainer.classList.remove('hidden');
-
-            const todayIndex = getTodayIndexInWeek();
-            let todayItems = state.items.filter(t => t.weekKey === weekKey && t.dayIndex === todayIndex);
-            if (state.selectedCategoryFilter !== 'all') todayItems = todayItems.filter(t => t.categoryId === state.selectedCategoryFilter);
-
-            container.innerHTML = `
-                <div class="flex items-center justify-between border-b pb-4 mb-4 border-gray-200/50">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-black" style="background-color: color-mix(in srgb, var(--accent-color) 15%, transparent); color: var(--accent-color);"><i class="fa-solid fa-star"></i></div>
-                        <div>
-                            <span class="uppercase tracking-wider text-[10px] font-bold px-2 py-0.5 rounded-md" style="background-color: color-mix(in srgb, var(--accent-color) 10%, transparent); color: var(--accent-color);">Vandaag Spotlight</span>
-                            <h2 class="text-lg font-extrabold mt-0.5">${DAYS_NL[todayIndex]}</h2>
-                        </div>
-                    </div>
-                    <button class="btn-add-today-spotlight px-3 py-1.5 rounded-xl font-bold text-xs transition" style="background-color: color-mix(in srgb, var(--accent-color) 10%, transparent); color: var(--accent-color);"><i class="fa-solid fa-plus"></i> Item</button>
-                </div>
-                <div id="today-spotlight-items-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    ${todayItems.length === 0 ? '<div class="col-span-full py-2 text-center text-xs text-gray-400">Geen items gepland voor vandaag.</div>' : ''}
-                </div>
-            `;
-
-            const listEl = container.querySelector('#today-spotlight-items-list');
-            todayItems.forEach(item => listEl.appendChild(createItemElement(item)));
-            container.querySelector('.btn-add-today-spotlight').addEventListener('click', () => openItemModal(null, todayIndex));
-        }
-
         function renderPlanner() {
             const container = document.getElementById('planner-grid-container');
             container.innerHTML = '';
+
             const startOfWeek = getStartOfWeek(state.currentWeekOffset);
             const weekKey = getWeekKey(startOfWeek);
             const todayIndex = getTodayIndexInWeek();
             const isCurrentRealWeek = state.currentWeekOffset === 0;
 
             document.getElementById('current-week-label').innerText = formatWeekLabel(startOfWeek);
-            renderTodaySpotlight(weekKey);
+
+            // Altijd doorlopend starten vanaf Vandaag (als het de huidige week is), 
+            // of vanaf Maandag als je in een andere week kijkt.
+            let dayIndices = [0, 1, 2, 3, 4, 5, 6];
+            if (isCurrentRealWeek) {
+                dayIndices = [];
+                for (let i = 0; i < 7; i++) {
+                    dayIndices.push((todayIndex + i) % 7);
+                }
+            }
 
             let totalItems = 0;
-            [0, 1, 2, 3, 4, 5, 6].forEach(i => {
+            dayIndices.forEach((i) => {
                 const dayDate = new Date(startOfWeek);
                 dayDate.setDate(dayDate.getDate() + i);
-                const isToday = isCurrentRealWeek && (i === todayIndex);
+
                 let dayItems = state.items.filter(t => t.weekKey === weekKey && t.dayIndex === i);
                 if (state.selectedCategoryFilter !== 'all') dayItems = dayItems.filter(t => t.categoryId === state.selectedCategoryFilter);
                 totalItems += dayItems.length;
 
                 const dayCard = document.createElement('div');
-                dayCard.className = `custom-card flex flex-col p-4 transition-all duration-200 ${isToday ? 'shadow-md' : ''}`;
-                if (isToday) {
-                    dayCard.style.boxShadow = '0 0 0 2px var(--accent-color)';
-                }
+                dayCard.className = `custom-card flex flex-col p-4 transition-all duration-200`;
 
                 dayCard.innerHTML = `
                     <div class="flex items-center justify-between border-b pb-2 mb-3 border-gray-200/40">
                         <div class="flex items-center space-x-2">
                             <span class="font-extrabold text-base">${DAYS_NL[i]}</span>
                             <span class="text-xs px-2 py-0.5 rounded-full bg-black/5 font-semibold">${dayDate.getDate()} ${dayDate.toLocaleDateString('nl-NL', { month: 'short' })}</span>
-                            ${isToday ? '<span class="text-[10px] text-white font-bold px-1.5 py-0.5 rounded-md" style="background-color: var(--accent-color);">VANDAAG</span>' : ''}
                         </div>
                         <button class="btn-add-item-day text-xs w-6 h-6 rounded-full flex items-center justify-center hover:bg-black/10 transition" data-day="${i}"><i class="fa-solid fa-plus"></i></button>
                     </div>
