@@ -132,6 +132,11 @@
             align-items: center;
             justify-content: center;
         }
+
+        .today-highlight-card {
+            border: 2px solid var(--accent-color) !important;
+            background: linear-gradient(to bottom right, var(--card-bg), rgba(147, 51, 234, 0.03)) !important;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col transition-colors duration-300">
@@ -257,26 +262,14 @@
                     </div>
                 </div>
 
-                <!-- FLEXIBELE WIDGET INSTELLING -->
+                <!-- WIDGET KOLOM BEHEER -->
                 <div class="space-y-3 pt-2 border-t border-gray-200/50">
                     <label class="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center justify-between">
-                        <span>Extra Widget Onder Kladblok</span>
+                        <span>Rechterkolom Widgets</span>
                         <i class="fa-solid fa-puzzle-piece text-xs" style="color: var(--accent-color);"></i>
                     </label>
-                    <div>
-                        <span class="text-xs font-medium block mb-1">Widget Titel</span>
-                        <input type="text" id="setting-custom-widget-title" placeholder="bijv. Boodschappenlijst" class="w-full p-2.5 rounded-xl border border-gray-300 text-xs">
-                    </div>
-                    <div>
-                        <span class="text-xs font-medium block mb-1">Kies Icoon</span>
-                        <select id="setting-custom-widget-icon" class="w-full p-2 rounded-xl border border-gray-300 text-xs bg-white">
-                            <option value="fa-basket-shopping">🛒 Boodschappen</option>
-                            <option value="fa-list-check">☑️ To-Do / Acties</option>
-                            <option value="fa-cake-candles">🎂 Verjaardagen</option>
-                            <option value="fa-bullseye">🎯 Doelen deze week</option>
-                            <option value="fa-heart">💖 Favorieten</option>
-                        </select>
-                    </div>
+                    <p class="text-[11px] text-gray-400">Vink aan welke widgets je wilt tonen en sleep of pas aan:</p>
+                    <div id="widget-manager-list" class="space-y-2"></div>
                 </div>
 
                 <div class="space-y-3 pt-2 border-t border-gray-200/50">
@@ -373,45 +366,9 @@
                 </div>
             </main>
 
-            <!-- RECHTER SECTIE: KLADBLOK + EXTRA WIDGET -->
-            <aside class="w-full lg:w-80 shrink-0 flex flex-col space-y-4 sticky top-6">
-                <!-- KLADBLOK -->
-                <div class="custom-card p-4 md:p-5 flex flex-col space-y-4 shadow-md">
-                    <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
-                        <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
-                            <i class="fa-solid fa-note-sticky" style="color: var(--accent-color);"></i>
-                            <span>Kladblok</span>
-                        </h3>
-                        <span class="text-[11px] text-gray-400 font-medium">Snel noteren</span>
-                    </div>
-                    
-                    <div class="flex-1 flex flex-col space-y-2">
-                        <textarea id="notepad-textarea" rows="6" placeholder="Typ hier snel je losse notities, gedachten of boodschappen..." class="w-full p-3 text-xs bg-amber-50/40 border border-amber-200/60 rounded-xl focus:ring-2 focus:bg-white outline-none resize-y transition leading-relaxed shadow-inner" style="--tw-ring-color: var(--accent-color);"></textarea>
-                        <div class="flex items-center justify-between text-[11px] text-gray-400 px-1">
-                            <span id="notepad-status">Wordt automatisch opgeslagen</span>
-                            <button type="button" id="btn-clear-notepad" class="hover:text-rose-600 transition font-medium">Wis</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- EXTRA ZELF IN TE RICHTEN WIDGET -->
-                <div class="custom-card p-4 md:p-5 flex flex-col space-y-4 shadow-md">
-                    <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
-                        <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
-                            <i id="custom-widget-icon-el" class="fa-solid fa-basket-shopping" style="color: var(--accent-color);"></i>
-                            <span id="custom-widget-title-display">Boodschappenlijst</span>
-                        </h3>
-                        <span class="text-[11px] text-gray-400 font-medium">Eigen widget</span>
-                    </div>
-                    
-                    <div class="flex-1 flex flex-col space-y-2">
-                        <textarea id="custom-widget-textarea" rows="6" placeholder="Typ hier je lijstje of notities voor deze widget..." class="w-full p-3 text-xs bg-purple-50/30 border border-purple-200/50 rounded-xl focus:ring-2 focus:bg-white outline-none resize-y transition leading-relaxed shadow-inner" style="--tw-ring-color: var(--accent-color);"></textarea>
-                        <div class="flex items-center justify-between text-[11px] text-gray-400 px-1">
-                            <span id="custom-widget-status">Wordt automatisch opgeslagen</span>
-                            <button type="button" id="btn-clear-custom-widget" class="hover:text-rose-600 transition font-medium">Wis</button>
-                        </div>
-                    </div>
-                </div>
+            <!-- RECHTER SECTIE: DYNAMISCHE WIDGET KOLOM -->
+            <aside id="right-widgets-container" class="w-full lg:w-80 shrink-0 flex flex-col space-y-4 sticky top-6">
+                <!-- Wordt dynamisch opgebouwd op basis van instellingen -->
             </aside>
 
         </div>
@@ -534,6 +491,12 @@
             { id: 'cat_social', name: 'Sociaal', color: '#8b5cf6' }
         ];
 
+        const DEFAULT_WIDGETS = [
+            { id: 'notepad', title: 'Kladblok', enabled: true },
+            { id: 'customWidget', title: 'Boodschappenlijst', enabled: true },
+            { id: 'miniCalendar', title: 'Maandoverzicht', enabled: true }
+        ];
+
         const DEFAULT_SETTINGS = {
             activePreset: 'emmy',
             bgColor: '#f9f5fb',
@@ -551,7 +514,8 @@
             radius: '16px',
             borderStyle: 'solid',
             font: 'font-quicksand',
-            categories: DEFAULT_CATEGORIES
+            categories: DEFAULT_CATEGORIES,
+            widgets: DEFAULT_WIDGETS
         };
 
         const PRESETS = {
@@ -621,6 +585,8 @@
                 await loadStateForUser(user.uid);
                 applySettingsUI();
                 renderCategoryManager();
+                renderWidgetManager();
+                renderRightWidgets();
                 renderPlanner();
                 updateLogoTheme();
             } else {
@@ -637,19 +603,18 @@
                 const notepadDoc = await db.collection('olgenda_users').doc(uid).collection('data').doc('notepad').get();
                 if (notepadDoc.exists) {
                     state.notepadContent = notepadDoc.data().content || '';
-                    document.getElementById('notepad-textarea').value = state.notepadContent;
                 }
 
                 const customWidgetDoc = await db.collection('olgenda_users').doc(uid).collection('data').doc('customWidget').get();
                 if (customWidgetDoc.exists) {
                     state.customWidgetContent = customWidgetDoc.data().content || '';
-                    document.getElementById('custom-widget-textarea').value = state.customWidgetContent;
                 }
 
                 const itemsSnapshot = await db.collection('olgenda_users').doc(uid).collection('items').get();
                 state.items = [];
                 itemsSnapshot.forEach(doc => state.items.push({ id: doc.id, ...doc.data() }));
                 if (!state.settings.categories) state.settings.categories = [...DEFAULT_CATEGORIES];
+                if (!state.settings.widgets) state.settings.widgets = [...DEFAULT_WIDGETS];
             } catch (e) { console.error(e); }
         }
 
@@ -721,6 +686,185 @@
             const hour = new Date().getHours();
             let greeting = hour < 12 ? 'Goedemorgen' : (hour < 18 ? 'Goedemiddag' : 'Goedenavond');
             return name ? `${greeting} ${name.trim()}!` : `${greeting}!`;
+        }
+
+        function renderWidgetManager() {
+            const container = document.getElementById('widget-manager-list');
+            if (!container) return;
+            container.innerHTML = '';
+
+            state.settings.widgets.forEach((w, idx) => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between bg-gray-50 p-2.5 rounded-xl border border-gray-200 text-xs';
+                item.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" class="widget-toggle-cb rounded accent-purple-600 cursor-pointer" data-index="${idx}" ${w.enabled ? 'checked' : ''}>
+                        <span class="font-semibold">${escapeHtml(w.title)}</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button type="button" class="widget-move-up p-1 text-gray-400 hover:text-gray-700 ${idx === 0 ? 'opacity-30 pointer-events-none' : ''}" data-index="${idx}"><i class="fa-solid fa-chevron-up"></i></button>
+                        <button type="button" class="widget-move-down p-1 text-gray-400 hover:text-gray-700 ${idx === state.settings.widgets.length - 1 ? 'opacity-30 pointer-events-none' : ''}" data-index="${idx}"><i class="fa-solid fa-chevron-down"></i></button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+
+            container.querySelectorAll('.widget-toggle-cb').forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    state.settings.widgets[e.target.dataset.index].enabled = e.target.checked;
+                    saveSettingsToFirebase(); renderRightWidgets();
+                });
+            });
+
+            container.querySelectorAll('.widget-move-up').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.currentTarget.dataset.index);
+                    if (idx > 0) {
+                        const temp = state.settings.widgets[idx];
+                        state.settings.widgets[idx] = state.settings.widgets[idx - 1];
+                        state.settings.widgets[idx - 1] = temp;
+                        saveSettingsToFirebase(); renderWidgetManager(); renderRightWidgets();
+                    }
+                });
+            });
+
+            container.querySelectorAll('.widget-move-down').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.currentTarget.dataset.index);
+                    if (idx < state.settings.widgets.length - 1) {
+                        const temp = state.settings.widgets[idx];
+                        state.settings.widgets[idx] = state.settings.widgets[idx + 1];
+                        state.settings.widgets[idx + 1] = temp;
+                        saveSettingsToFirebase(); renderWidgetManager(); renderRightWidgets();
+                    }
+                });
+            });
+        }
+
+        function renderRightWidgets() {
+            const container = document.getElementById('right-widgets-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            state.settings.widgets.forEach(w => {
+                if (!w.enabled) return;
+
+                if (w.id === 'notepad') {
+                    const card = document.createElement('div');
+                    card.className = 'custom-card p-4 md:p-5 flex flex-col space-y-4 shadow-md';
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
+                            <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
+                                <i class="fa-solid fa-note-sticky" style="color: var(--accent-color);"></i>
+                                <span>Kladblok</span>
+                            </h3>
+                            <span class="text-[11px] text-gray-400 font-medium">Snel noteren</span>
+                        </div>
+                        <div class="flex-1 flex flex-col space-y-2">
+                            <textarea id="notepad-textarea" rows="5" placeholder="Typ hier snel je losse notities..." class="w-full p-3 text-xs bg-amber-50/40 border border-amber-200/60 rounded-xl focus:ring-2 focus:bg-white outline-none resize-y transition leading-relaxed shadow-inner" style="--tw-ring-color: var(--accent-color);">${escapeHtml(state.notepadContent)}</textarea>
+                            <div class="flex items-center justify-between text-[11px] text-gray-400 px-1">
+                                <span id="notepad-status">Wordt automatisch opgeslagen</span>
+                                <button type="button" id="btn-clear-notepad" class="hover:text-rose-600 transition font-medium">Wis</button>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+
+                    const ta = card.querySelector('#notepad-textarea');
+                    ta.addEventListener('input', () => {
+                        state.notepadContent = ta.value;
+                        card.querySelector('#notepad-status').innerText = "Opslaan...";
+                        clearTimeout(window.notepadTimer);
+                        window.notepadTimer = setTimeout(() => {
+                            saveNotepadToFirebase();
+                            card.querySelector('#notepad-status').innerText = "Opgeslagen ✓";
+                        }, 800);
+                    });
+                    card.querySelector('#btn-clear-notepad').addEventListener('click', () => {
+                        if (confirm("Weet je zeker dat je het kladblok wilt legen?")) {
+                            ta.value = ''; state.notepadContent = ''; saveNotepadToFirebase();
+                        }
+                    });
+                } 
+                else if (w.id === 'customWidget') {
+                    const card = document.createElement('div');
+                    card.className = 'custom-card p-4 md:p-5 flex flex-col space-y-4 shadow-md';
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
+                            <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
+                                <i id="custom-widget-icon-el" class="fa-solid ${state.settings.customWidgetIcon || 'fa-basket-shopping'}" style="color: var(--accent-color);"></i>
+                                <span id="custom-widget-title-display">${escapeHtml(state.settings.customWidgetTitle || 'Boodschappenlijst')}</span>
+                            </h3>
+                            <span class="text-[11px] text-gray-400 font-medium">Eigen widget</span>
+                        </div>
+                        <div class="flex-1 flex flex-col space-y-2">
+                            <textarea id="custom-widget-textarea" rows="5" placeholder="Typ hier je lijstje..." class="w-full p-3 text-xs bg-purple-50/30 border border-purple-200/50 rounded-xl focus:ring-2 focus:bg-white outline-none resize-y transition leading-relaxed shadow-inner" style="--tw-ring-color: var(--accent-color);">${escapeHtml(state.customWidgetContent)}</textarea>
+                            <div class="flex items-center justify-between text-[11px] text-gray-400 px-1">
+                                <span id="custom-widget-status">Wordt automatisch opgeslagen</span>
+                                <button type="button" id="btn-clear-custom-widget" class="hover:text-rose-600 transition font-medium">Wis</button>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+
+                    const ta = card.querySelector('#custom-widget-textarea');
+                    ta.addEventListener('input', () => {
+                        state.customWidgetContent = ta.value;
+                        card.querySelector('#custom-widget-status').innerText = "Opslaan...";
+                        clearTimeout(window.customWidgetTimer);
+                        window.customWidgetTimer = setTimeout(() => {
+                            saveCustomWidgetToFirebase();
+                            card.querySelector('#custom-widget-status').innerText = "Opgeslagen ✓";
+                        }, 800);
+                    });
+                    card.querySelector('#btn-clear-custom-widget').addEventListener('click', () => {
+                        if (confirm("Weet je zeker dat je deze widget wilt legen?")) {
+                            ta.value = ''; state.customWidgetContent = ''; saveCustomWidgetToFirebase();
+                        }
+                    });
+                }
+                else if (w.id === 'miniCalendar') {
+                    const card = document.createElement('div');
+                    card.className = 'custom-card p-4 md:p-5 flex flex-col space-y-3 shadow-md';
+                    
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = now.getMonth();
+                    const monthNames = ['Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni', 'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December'];
+                    
+                    const firstDayIndex = new Date(year, month, 1).getDay();
+                    const adjustedFirstDay = firstDayIndex === 0 ? 6 : firstDayIndex - 1; // Maandag start
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    const todayDate = now.getDate();
+
+                    let calHtml = `
+                        <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
+                            <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
+                                <i class="fa-solid fa-calendar-days" style="color: var(--accent-color);"></i>
+                                <span>${monthNames[month]} ${year}</span>
+                            </h3>
+                            <span class="text-[11px] text-gray-400 font-medium">Mini kalender</span>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-gray-400 pt-1">
+                            <span>Ma</span><span>Di</span><span>Wo</span><span>Do</span><span>Vr</span><span>Za</span><span>Zo</span>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1 text-center text-xs">
+                    `;
+
+                    for (let i = 0; i < adjustedFirstDay; i++) {
+                        calHtml += `<div></div>`;
+                    }
+
+                    for (let d = 1; d <= daysInMonth; d++) {
+                        const isToday = d === todayDate;
+                        calHtml += `<div class="py-1 rounded-lg font-medium ${isToday ? 'text-white font-bold shadow-sm' : 'hover:bg-gray-100 text-gray-700'}" ${isToday ? `style="background-color: var(--accent-color);"` : ''}>${d}</div>`;
+                    }
+
+                    calHtml += `</div>`;
+                    card.innerHTML = calHtml;
+                    container.appendChild(card);
+                }
+            });
         }
 
         function renderCategoryManager() {
@@ -798,11 +942,6 @@
             document.getElementById('color-card').value = s.cardColor;
             document.getElementById('color-text').value = s.textColor;
             document.getElementById('color-accent').value = s.accentColor;
-            
-            document.getElementById('setting-custom-widget-title').value = s.customWidgetTitle || 'Boodschappenlijst';
-            document.getElementById('setting-custom-widget-icon').value = s.customWidgetIcon || 'fa-basket-shopping';
-            document.getElementById('custom-widget-title-display').innerText = s.customWidgetTitle || 'Boodschappenlijst';
-            document.getElementById('custom-widget-icon-el').className = `fa-solid ${s.customWidgetIcon || 'fa-basket-shopping'}`;
 
             updateLogoTheme();
         }
@@ -818,8 +957,6 @@
 
             document.getElementById('current-week-label').innerText = formatWeekLabel(startOfWeek);
 
-            // Altijd doorlopend starten vanaf Vandaag (als het de huidige week is), 
-            // of vanaf Maandag als je in een andere week kijkt.
             let dayIndices = [0, 1, 2, 3, 4, 5, 6];
             if (isCurrentRealWeek) {
                 dayIndices = [];
@@ -829,22 +966,25 @@
             }
 
             let totalItems = 0;
-            dayIndices.forEach((i) => {
+            dayIndices.forEach((i, idx) => {
                 const dayDate = new Date(startOfWeek);
                 dayDate.setDate(dayDate.getDate() + i);
+
+                const isRealToday = isCurrentRealWeek && idx === 0;
 
                 let dayItems = state.items.filter(t => t.weekKey === weekKey && t.dayIndex === i);
                 if (state.selectedCategoryFilter !== 'all') dayItems = dayItems.filter(t => t.categoryId === state.selectedCategoryFilter);
                 totalItems += dayItems.length;
 
                 const dayCard = document.createElement('div');
-                dayCard.className = `custom-card flex flex-col p-4 transition-all duration-200`;
+                dayCard.className = `custom-card flex flex-col p-4 transition-all duration-200 ${isRealToday ? 'today-highlight-card shadow-md' : ''}`;
 
                 dayCard.innerHTML = `
                     <div class="flex items-center justify-between border-b pb-2 mb-3 border-gray-200/40">
                         <div class="flex items-center space-x-2">
                             <span class="font-extrabold text-base">${DAYS_NL[i]}</span>
-                            <span class="text-xs px-2 py-0.5 rounded-full bg-black/5 font-semibold">${dayDate.getDate()} ${dayDate.toLocaleDateString('nl-NL', { month: 'short' })}</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full ${isRealToday ? 'bg-purple-600 text-white font-bold' : 'bg-black/5 font-semibold'}">${dayDate.getDate()} ${dayDate.toLocaleDateString('nl-NL', { month: 'short' })}</span>
+                            ${isRealToday ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">Vandaag</span>' : ''}
                         </div>
                         <button class="btn-add-item-day text-xs w-6 h-6 rounded-full flex items-center justify-center hover:bg-black/10 transition" data-day="${i}"><i class="fa-solid fa-plus"></i></button>
                     </div>
@@ -959,59 +1099,6 @@
             document.getElementById('btn-prev-week').addEventListener('click', () => { state.currentWeekOffset--; renderPlanner(); });
             document.getElementById('btn-next-week').addEventListener('click', () => { state.currentWeekOffset++; renderPlanner(); });
             document.getElementById('btn-today').addEventListener('click', () => { state.currentWeekOffset = 0; renderPlanner(); });
-
-            // Kladblok auto-save
-            const notepadTextarea = document.getElementById('notepad-textarea');
-            notepadTextarea.addEventListener('input', () => {
-                state.notepadContent = notepadTextarea.value;
-                document.getElementById('notepad-status').innerText = "Opslaan...";
-                clearTimeout(window.notepadTimer);
-                window.notepadTimer = setTimeout(() => {
-                    saveNotepadToFirebase();
-                    document.getElementById('notepad-status').innerText = "Opgeslagen ✓";
-                }, 800);
-            });
-
-            document.getElementById('btn-clear-notepad').addEventListener('click', () => {
-                if (confirm("Weet je zeker dat je het kladblok wilt legen?")) {
-                    notepadTextarea.value = '';
-                    state.notepadContent = '';
-                    saveNotepadToFirebase();
-                }
-            });
-
-            // Extra custom widget auto-save
-            const customWidgetTextarea = document.getElementById('custom-widget-textarea');
-            customWidgetTextarea.addEventListener('input', () => {
-                state.customWidgetContent = customWidgetTextarea.value;
-                document.getElementById('custom-widget-status').innerText = "Opslaan...";
-                clearTimeout(window.customWidgetTimer);
-                window.customWidgetTimer = setTimeout(() => {
-                    saveCustomWidgetToFirebase();
-                    document.getElementById('custom-widget-status').innerText = "Opgeslagen ✓";
-                }, 800);
-            });
-
-            document.getElementById('btn-clear-custom-widget').addEventListener('click', () => {
-                if (confirm("Weet je zeker dat je deze widget wilt legen?")) {
-                    customWidgetTextarea.value = '';
-                    state.customWidgetContent = '';
-                    saveCustomWidgetToFirebase();
-                }
-            });
-
-            // Settings for custom widget title & icon
-            document.getElementById('setting-custom-widget-title').addEventListener('input', (e) => {
-                state.settings.customWidgetTitle = e.target.value.trim() || 'Widget';
-                document.getElementById('custom-widget-title-display').innerText = state.settings.customWidgetTitle;
-                saveSettingsToFirebase();
-            });
-
-            document.getElementById('setting-custom-widget-icon').addEventListener('change', (e) => {
-                state.settings.customWidgetIcon = e.target.value;
-                document.getElementById('custom-widget-icon-el').className = `fa-solid ${e.target.value}`;
-                saveSettingsToFirebase();
-            });
 
             document.querySelectorAll('.sticker-opt').forEach(btn => {
                 btn.addEventListener('click', () => {
