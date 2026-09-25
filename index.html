@@ -154,7 +154,10 @@
                     <input type="email" id="auth-email" required class="w-full p-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Wachtwoord</label>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-bold uppercase text-gray-500">Wachtwoord</label>
+                        <a href="#" onclick="forgotPassword(event)" class="text-xs text-purple-600 hover:underline font-semibold">Wachtwoord vergeten?</a>
+                    </div>
                     <input type="password" id="auth-password" required class="w-full p-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
                 </div>
                 <button type="submit" id="auth-submit-btn" class="w-full py-3 custom-btn-primary font-bold rounded-xl text-sm transition shadow-md">
@@ -632,6 +635,27 @@
             } catch (error) {
                 errorBox.textContent = error.message;
                 errorBox.classList.remove('hidden');
+            }
+        };
+
+        // Wachtwoord vergeten functionaliteit
+        window.forgotPassword = function(e) {
+            e.preventDefault();
+            const emailInput = document.getElementById('auth-email');
+            let email = emailInput.value.trim();
+
+            if (!email) {
+                email = prompt("Vul je e-mailadres in om een herstellink te ontvangen:");
+            }
+
+            if (email) {
+                auth.sendPasswordResetEmail(email)
+                    .then(() => {
+                        alert("Er is een e-mail verstuurd naar " + email + " met instructies om je wachtwoord te resetten.");
+                    })
+                    .catch((error) => {
+                        alert("Fout bij versturen: " + error.message);
+                    });
             }
         };
 
@@ -1495,293 +1519,8 @@
         // --- OPSTARTEN ---
         window.onload = function () {
             initEventListeners();
-            // De auth.onAuthStateChanged handelt het laden van de state automatisch af zodra je inlogt
         };
     </script>
-<a href="https://github.com/xolgaxx/weekplanner/issues" target="_blank" style="position: fixed; bottom: 20px; right: 20px; background: #24292e; color: white; padding: 12px 20px; border-radius: 30px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000; font-family: 'Quicksand', sans-serif;">💬 Geef Feedback</a></body>
-</html><!DOCTYPE html>
-<html lang="nl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Olgenda - Jouw Persoonlijke Agenda</title>
-    <!-- Tailwind CSS voor styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { extend: { colors: { primary: '#3b82f6' } } }
-        }
-    </script>
-</head>
-<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200">
-
-    <!-- INLOG / REGISTRATIE SCHERM (Standaard verborgen tot Firebase laadt) -->
-    <div id="auth-screen" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-200 dark:border-slate-700">
-            <div class="text-center mb-6">
-                <h1 id="auth-title" class="text-2xl font-bold">Inloggen bij Olgenda</h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Beheer je eigen privégegevens veilig in de cloud.</p>
-            </div>
-
-            <!-- Foutmelding box -->
-            <div id="auth-error" class="hidden mb-4 p-3 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded-lg text-sm"></div>
-
-            <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">E-mailadres</label>
-                    <input type="email" id="auth-email" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-primary outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Wachtwoord</label>
-                    <input type="password" id="auth-password" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-primary outline-none">
-                </div>
-                <button type="submit" id="auth-submit-btn" class="w-full py-2.5 bg-primary hover:bg-blue-600 text-white font-medium rounded-lg transition shadow-md">
-                    Inloggen
-                </button>
-            </form>
-
-            <div class="mt-6 text-center text-sm">
-                <span id="auth-switch-text" class="text-slate-500">Nog geen account?</span>
-                <button type="button" onclick="toggleAuthMode()" id="auth-switch-btn" class="text-primary font-medium ml-1 hover:underline">
-                    Maak er een aan
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- HOOFDAPPLICATIE (Pas zichtbaar na inloggen) -->
-    <div id="app-screen" class="hidden">
-        <!-- Header -->
-        <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-30 shadow-sm">
-            <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
-                <div class="flex items-center space-x-3">
-                    <h1 class="text-xl font-bold tracking-tight text-primary">Olgenda</h1>
-                    <span id="user-email-display" class="text-xs px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300"></span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="Thema wisselen">
-                        🌙
-                    </button>
-                    <button onclick="logoutUser()" class="px-3 py-1.5 text-sm font-medium bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 transition">
-                        Uitloggen
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="max-w-4xl mx-auto px-4 py-6">
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
-                <h2 class="text-lg font-semibold mb-4">Nieuwe taak / afspraak toevoegen</h2>
-                <form id="task-form" onsubmit="addOrUpdateTask(event)" class="space-y-4">
-                    <input type="hidden" id="task-id">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Onderwerp / Taak</label>
-                        <input type="text" id="task-title" required placeholder="Bijv. Boodschappen doen..." class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-primary outline-none">
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Datum</label>
-                            <input type="date" id="task-date" required class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-primary outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Categorie / Notitie</label>
-                            <input type="text" id="task-desc" placeholder="Optionele details..." class="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-primary outline-none">
-                        </div>
-                    </div>
-                    <div class="flex justify-end space-x-2">
-                        <button type="button" id="cancel-edit-btn" onclick="resetTaskForm()" class="hidden px-4 py-2 text-sm font-medium bg-slate-200 dark:bg-slate-700 rounded-lg">Annuleren</button>
-                        <button type="submit" id="task-submit-btn" class="px-5 py-2 bg-primary hover:bg-blue-600 text-white font-medium rounded-lg transition shadow">Toevoegen</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Overzicht taken -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-                <h2 class="text-lg font-semibold mb-4">Jouw Agenda & Taken</h2>
-                <div id="tasks-list" class="space-y-3">
-                    <p class="text-sm text-slate-400 text-center py-4">Geen taken gevonden...</p>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Firebase SDK's (Moderne v9+ Modular Versie) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { 
-            getAuth, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            signOut, 
-            onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            query, 
-            where, 
-            onSnapshot, 
-            deleteDoc, 
-            doc, 
-            updateDoc 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        // ==========================================
-        // JOUW FIREBASE CONFIGURATIE (Zorg dat deze klopt)
-        // ==========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyA861FoEtfcy7p4369sJUJ-OZIJiOXEn5A",
-            authDomain: "olgenda-9bf5f.firebaseapp.com",
-            projectId: "olgenda-9bf5f",
-            storageBucket: "olgenda-9bf5f.appspot.com",
-            messagingSenderId: "13330878107",
-            appId: "1:13330878107:web:bdaf88009733369f17003e"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        let currentUser = null;
-        let isRegisterMode = false;
-        let unsubscribeTasks = null;
-
-        // Globale functies beschikbaar maken voor HTML event handlers
-        window.handleAuth = async function(e) {
-            e.preventDefault();
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
-            const errorBox = document.getElementById('auth-error');
-            errorBox.classList.add('hidden');
-
-            try {
-                if (isRegisterMode) {
-                    await createUserWithEmailAndPassword(auth, email, password);
-                } else {
-                    await signInWithEmailAndPassword(auth, email, password);
-                }
-            } catch (error) {
-                errorBox.textContent = error.message;
-                errorBox.classList.remove('hidden');
-            }
-        };
-
-        window.toggleAuthMode = function() {
-            isRegisterMode = !isRegisterMode;
-            document.getElementById('auth-title').textContent = isRegisterMode ? 'Account aanmaken' : 'Inloggen bij Olgenda';
-            document.getElementById('auth-submit-btn').textContent = isRegisterMode ? 'Account registreren' : 'Inloggen';
-            document.getElementById('auth-switch-text').textContent = isRegisterMode ? 'Al een account?' : 'Nog geen account?';
-            document.getElementById('auth-switch-btn').textContent = isRegisterMode ? 'Log in' : 'Maak er een aan';
-            document.getElementById('auth-error').classList.add('hidden');
-        };
-
-        window.logoutUser = function() {
-            signOut(auth);
-        };
-
-        // Luister naar inlog-status van de gebruiker
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            const authScreen = document.getElementById('auth-screen');
-            const appScreen = document.getElementById('app-screen');
-
-            if (user) {
-                // Ingelogd! Verberg inlogscherm, toon app en laad taken voor DEZE gebruiker
-                authScreen.classList.add('hidden');
-                appScreen.classList.remove('hidden');
-                document.getElementById('user-email-display').textContent = user.email;
-                loadUserTasks(user.uid);
-            } else {
-                // Uitgelogd! Toon inlogscherm, verberg app
-                authScreen.classList.remove('hidden');
-                appScreen.classList.add('hidden');
-                if (unsubscribeTasks) unsubscribeTasks(); // Stop live luisteren naar database
-            }
-        });
-
-        // Laad alleen taken die gekoppeld zijn aan de UID van de ingelogde gebruiker
-        function loadUserTasks(uid) {
-            const q = query(collection(db, "olgenda_items"), where("userId", "==", uid));
-            
-            unsubscribeTasks = onSnapshot(q, (snapshot) => {
-                const tasksList = document.getElementById('tasks-list');
-                tasksList.innerHTML = '';
-
-                if (snapshot.empty) {
-                    tasksList.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">Je hebt nog geen taken of afspraken toegevoegd.</p>';
-                    return;
-                }
-
-                snapshot.forEach((docSnap) => {
-                    const task = docSnap.data();
-                    const id = docSnap.id;
-
-                    const taskEl = document.createElement('div');
-                    taskEl.className = "flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600";
-                    taskEl.innerHTML = `
-                        <div>
-                            <h3 class="font-medium text-slate-800 dark:text-slate-100">${escapeHtml(task.title)}</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">📅 ${task.date} ${task.description ? '• ' + escapeHtml(task.description) : ''}</p>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button onclick="deleteTask('${id}')" class="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition" title="Verwijderen">🗑️</button>
-                        </div>
-                    `;
-                    tasksList.appendChild(taskEl);
-                });
-            });
-        }
-
-        // Taak toevoegen gekoppeld aan de huidige gebruiker
-        window.addOrUpdateTask = async function(e) {
-            e.preventDefault();
-            if (!currentUser) return;
-
-            const title = document.getElementById('task-title').value;
-            const date = document.getElementById('task-date').value;
-            const description = document.getElementById('task-desc').value;
-
-            try {
-                await addDoc(collection(db, "olgenda_items"), {
-                    userId: currentUser.uid, // Belangrijk: Koppelt de taak aan deze specifieke gebruiker!
-                    title: title,
-                    date: date,
-                    description: description,
-                    createdAt: new Date()
-                });
-                resetTaskForm();
-            } catch (err) {
-                alert("Fout bij opslaan: " + err.message);
-            }
-        };
-
-        window.deleteTask = async function(id) {
-            if (confirm("Weet je zeker dat je deze taak wilt verwijderen?")) {
-                try {
-                    await deleteDoc(doc(db, "olgenda_items", id));
-                } catch (err) {
-                    alert("Fout bij verwijderen: " + err.message);
-                }
-            }
-        };
-
-        window.resetTaskForm = function() {
-            document.getElementById('task-form').reset();
-            document.getElementById('task-id').value = '';
-        };
-
-        // Dark mode schakelaar
-        window.toggleDarkMode = function() {
-            document.documentElement.classList.toggle('dark');
-        };
-
-        function escapeHtml(text) {
-            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-        }
-    </script>
+    <a href="https://github.com/xolgaxx/weekplanner/issues" target="_blank" style="position: fixed; bottom: 20px; right: 20px; background: #24292e; color: white; padding: 12px 20px; border-radius: 30px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000; font-family: 'Quicksand', sans-serif;">💬 Geef Feedback</a>
 </body>
 </html>
