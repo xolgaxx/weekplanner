@@ -257,6 +257,28 @@
                     </div>
                 </div>
 
+                <!-- FLEXIBELE WIDGET INSTELLING -->
+                <div class="space-y-3 pt-2 border-t border-gray-200/50">
+                    <label class="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center justify-between">
+                        <span>Extra Widget Onder Kladblok</span>
+                        <i class="fa-solid fa-puzzle-piece text-xs" style="color: var(--accent-color);"></i>
+                    </label>
+                    <div>
+                        <span class="text-xs font-medium block mb-1">Widget Titel</span>
+                        <input type="text" id="setting-custom-widget-title" placeholder="bijv. Boodschappenlijst" class="w-full p-2.5 rounded-xl border border-gray-300 text-xs">
+                    </div>
+                    <div>
+                        <span class="text-xs font-medium block mb-1">Kies Icoon</span>
+                        <select id="setting-custom-widget-icon" class="w-full p-2 rounded-xl border border-gray-300 text-xs bg-white">
+                            <option value="fa-basket-shopping">🛒 Boodschappen</option>
+                            <option value="fa-list-check">☑️ To-Do / Acties</option>
+                            <option value="fa-cake-candles">🎂 Verjaardagen</option>
+                            <option value="fa-bullseye">🎯 Doelen deze week</option>
+                            <option value="fa-heart">💖 Favorieten</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="space-y-3 pt-2 border-t border-gray-200/50">
                     <label class="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center justify-between">
                         <span>Categorie Beheer</span>
@@ -361,21 +383,43 @@
                 </div>
             </main>
 
-            <!-- RECHTER SECTIE: KLADBLOK -->
-            <aside class="w-full lg:w-80 shrink-0 custom-card p-4 md:p-5 flex flex-col space-y-4 shadow-md sticky top-6">
-                <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
-                    <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
-                        <i class="fa-solid fa-note-sticky" style="color: var(--accent-color);"></i>
-                        <span>Kladblok</span>
-                    </h3>
-                    <span class="text-[11px] text-gray-400 font-medium">Snel noteren</span>
+            <!-- RECHTER SECTIE: KLADBLOK + EXTRA WIDGET -->
+            <aside class="w-full lg:w-80 shrink-0 flex flex-col space-y-4 sticky top-6">
+                <!-- KLADBLOK -->
+                <div class="custom-card p-4 md:p-5 flex flex-col space-y-4 shadow-md">
+                    <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
+                        <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
+                            <i class="fa-solid fa-note-sticky" style="color: var(--accent-color);"></i>
+                            <span>Kladblok</span>
+                        </h3>
+                        <span class="text-[11px] text-gray-400 font-medium">Snel noteren</span>
+                    </div>
+                    
+                    <div class="flex-1 flex flex-col space-y-2">
+                        <textarea id="notepad-textarea" rows="6" placeholder="Typ hier snel je losse notities, gedachten of boodschappen..." class="w-full p-3 text-xs bg-amber-50/40 border border-amber-200/60 rounded-xl focus:ring-2 focus:bg-white outline-none resize-y transition leading-relaxed shadow-inner" style="--tw-ring-color: var(--accent-color);"></textarea>
+                        <div class="flex items-center justify-between text-[11px] text-gray-400 px-1">
+                            <span id="notepad-status">Wordt automatisch opgeslagen</span>
+                            <button type="button" id="btn-clear-notepad" class="hover:text-rose-600 transition font-medium">Wis</button>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="flex-1 flex flex-col space-y-2">
-                    <textarea id="notepad-textarea" rows="12" placeholder="Typ hier snel je losse notities, gedachten of boodschappen..." class="w-full p-3 text-xs bg-amber-50/40 border border-amber-200/60 rounded-xl focus:ring-2 focus:bg-white outline-none resize-y transition leading-relaxed shadow-inner" style="--tw-ring-color: var(--accent-color);"></textarea>
-                    <div class="flex items-center justify-between text-[11px] text-gray-400 px-1">
-                        <span id="notepad-status">Wordt automatisch opgeslagen</span>
-                        <button type="button" id="btn-clear-notepad" class="hover:text-rose-600 transition font-medium">Wis kladblok</button>
+
+                <!-- EXTRA ZELF IN TE RICHTEN WIDGET -->
+                <div class="custom-card p-4 md:p-5 flex flex-col space-y-4 shadow-md">
+                    <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
+                        <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
+                            <i id="custom-widget-icon-el" class="fa-solid fa-basket-shopping" style="color: var(--accent-color);"></i>
+                            <span id="custom-widget-title-display">Boodschappenlijst</span>
+                        </h3>
+                        <span class="text-[11px] text-gray-400 font-medium">Eigen widget</span>
+                    </div>
+                    
+                    <div class="flex-1 flex flex-col space-y-2">
+                        <textarea id="custom-widget-textarea" rows="6" placeholder="Typ hier je lijstje of notities voor deze widget..." class="w-full p-3 text-xs bg-purple-50/30 border border-purple-200/50 rounded-xl focus:ring-2 focus:bg-white outline-none resize-y transition leading-relaxed shadow-inner" style="--tw-ring-color: var(--accent-color);"></textarea>
+                        <div class="flex items-center justify-between text-[11px] text-gray-400 px-1">
+                            <span id="custom-widget-status">Wordt automatisch opgeslagen</span>
+                            <button type="button" id="btn-clear-custom-widget" class="hover:text-rose-600 transition font-medium">Wis</button>
+                        </div>
                     </div>
                 </div>
             </aside>
@@ -513,6 +557,8 @@
             avatarImg: 'https://placehold.co/120x120/6366f1/ffffff?text=U',
             avatarShape: 'rounded-full',
             showSpotlight: true,
+            customWidgetTitle: 'Boodschappenlijst',
+            customWidgetIcon: 'fa-basket-shopping',
             radius: '16px',
             borderStyle: 'solid',
             font: 'font-quicksand',
@@ -532,6 +578,7 @@
             selectedCategoryFilter: 'all',
             items: [],
             notepadContent: '',
+            customWidgetContent: '',
             settings: { ...DEFAULT_SETTINGS }
         };
 
@@ -604,6 +651,12 @@
                     document.getElementById('notepad-textarea').value = state.notepadContent;
                 }
 
+                const customWidgetDoc = await db.collection('olgenda_users').doc(uid).collection('data').doc('customWidget').get();
+                if (customWidgetDoc.exists) {
+                    state.customWidgetContent = customWidgetDoc.data().content || '';
+                    document.getElementById('custom-widget-textarea').value = state.customWidgetContent;
+                }
+
                 const itemsSnapshot = await db.collection('olgenda_users').doc(uid).collection('items').get();
                 state.items = [];
                 itemsSnapshot.forEach(doc => state.items.push({ id: doc.id, ...doc.data() }));
@@ -619,6 +672,11 @@
         async function saveNotepadToFirebase() {
             if (!currentUser) return;
             await db.collection('olgenda_users').doc(currentUser.uid).collection('data').doc('notepad').set({ content: state.notepadContent });
+        }
+
+        async function saveCustomWidgetToFirebase() {
+            if (!currentUser) return;
+            await db.collection('olgenda_users').doc(currentUser.uid).collection('data').doc('customWidget').set({ content: state.customWidgetContent });
         }
 
         async function saveItemToFirebase(item) {
@@ -752,6 +810,13 @@
             document.getElementById('color-text').value = s.textColor;
             document.getElementById('color-accent').value = s.accentColor;
             document.getElementById('setting-show-spotlight').checked = s.showSpotlight !== false;
+            
+            // Custom widget settings sync
+            document.getElementById('setting-custom-widget-title').value = s.customWidgetTitle || 'Boodschappenlijst';
+            document.getElementById('setting-custom-widget-icon').value = s.customWidgetIcon || 'fa-basket-shopping';
+            document.getElementById('custom-widget-title-display').innerText = s.customWidgetTitle || 'Boodschappenlijst';
+            document.getElementById('custom-widget-icon-el').className = `fa-solid ${s.customWidgetIcon || 'fa-basket-shopping'}`;
+
             updateLogoTheme();
         }
 
@@ -933,6 +998,7 @@
             document.getElementById('btn-next-week').addEventListener('click', () => { state.currentWeekOffset++; renderPlanner(); });
             document.getElementById('btn-today').addEventListener('click', () => { state.currentWeekOffset = 0; renderPlanner(); });
 
+            // Kladblok auto-save
             const notepadTextarea = document.getElementById('notepad-textarea');
             notepadTextarea.addEventListener('input', () => {
                 state.notepadContent = notepadTextarea.value;
@@ -940,7 +1006,7 @@
                 clearTimeout(window.notepadTimer);
                 window.notepadTimer = setTimeout(() => {
                     saveNotepadToFirebase();
-                    document.getElementById('notepad-status').innerText = "Opgeslagen in cloud ✓";
+                    document.getElementById('notepad-status').innerText = "Opgeslagen ✓";
                 }, 800);
             });
 
@@ -950,6 +1016,39 @@
                     state.notepadContent = '';
                     saveNotepadToFirebase();
                 }
+            });
+
+            // Extra custom widget auto-save
+            const customWidgetTextarea = document.getElementById('custom-widget-textarea');
+            customWidgetTextarea.addEventListener('input', () => {
+                state.customWidgetContent = customWidgetTextarea.value;
+                document.getElementById('custom-widget-status').innerText = "Opslaan...";
+                clearTimeout(window.customWidgetTimer);
+                window.customWidgetTimer = setTimeout(() => {
+                    saveCustomWidgetToFirebase();
+                    document.getElementById('custom-widget-status').innerText = "Opgeslagen ✓";
+                }, 800);
+            });
+
+            document.getElementById('btn-clear-custom-widget').addEventListener('click', () => {
+                if (confirm("Weet je zeker dat je deze widget wilt legen?")) {
+                    customWidgetTextarea.value = '';
+                    state.customWidgetContent = '';
+                    saveCustomWidgetToFirebase();
+                }
+            });
+
+            // Settings for custom widget title & icon
+            document.getElementById('setting-custom-widget-title').addEventListener('input', (e) => {
+                state.settings.customWidgetTitle = e.target.value.trim() || 'Widget';
+                document.getElementById('custom-widget-title-display').innerText = state.settings.customWidgetTitle;
+                saveSettingsToFirebase();
+            });
+
+            document.getElementById('setting-custom-widget-icon').addEventListener('change', (e) => {
+                state.settings.customWidgetIcon = e.target.value;
+                document.getElementById('custom-widget-icon-el').className = `fa-solid ${e.target.value}`;
+                saveSettingsToFirebase();
             });
 
             document.querySelectorAll('.sticker-opt').forEach(btn => {
