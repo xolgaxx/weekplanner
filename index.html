@@ -257,7 +257,7 @@
                     </label>
                     <div>
                         <span class="text-xs font-medium block mb-1">Jouw Naam</span>
-                        <input type="text" id="setting-user-name" placeholder="bijv. Olga" class="w-full p-2.5 rounded-xl border border-gray-300 text-xs">
+                        <input type="text" id="setting-user-name" placeholder="Vul je naam in..." class="w-full p-2.5 rounded-xl border border-gray-300 text-xs">
                     </div>
                     <div>
                         <span class="text-xs font-medium block mb-1">Profielfoto Uploaden</span>
@@ -307,7 +307,7 @@
                             <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span> Floris
                         </button>
                         <button data-preset="olga" class="preset-btn p-2 border rounded-xl text-left text-xs font-semibold hover:border-rose-400 transition flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full bg-rose-400 inline-block"></span> Olga
+                            <span class="w-3 h-3 rounded-full bg-rose-400 inline-block"></span> Standaard
                         </button>
                         <button data-preset="custom" class="preset-btn col-span-2 p-2 border rounded-xl text-center text-xs font-bold hover:border-purple-500 transition flex items-center justify-center gap-2 bg-gray-50 border-dashed">
                             <span class="w-3 h-3 rounded-full bg-purple-600 inline-block"></span> ⚙️ Jouw Custom Thema
@@ -348,7 +348,7 @@
             <main class="flex-1 flex flex-col space-y-5 min-w-0 w-full lg:w-auto">
 
                 <div id="greeting-banner-container" class="px-1">
-                    <h1 id="main-greeting-heading" class="text-xl md:text-2xl font-extrabold tracking-tight">Goedemorgen Olga! 👋</h1>
+                    <h1 id="main-greeting-heading" class="text-xl md:text-2xl font-extrabold tracking-tight">Goedemorgen! 👋</h1>
                 </div>
 
                 <div id="planner-grid-container" class="flex flex-col gap-4 transition-all duration-300">
@@ -504,7 +504,6 @@
             { id: 'cat_social', name: 'Sociaal', color: '#8b5cf6' }
         ];
 
-        // Widgets nu voorzien van flexibele customClass eigenschappen voor betere customisatie
         const DEFAULT_WIDGETS = [
             { id: 'notepad', title: 'Kladblok', enabled: true, customClass: 'bg-amber-50/40 border-amber-200/60' },
             { id: 'customWidget', title: 'Boodschappenlijst', enabled: true, customClass: 'bg-purple-50/30 border-purple-200/50' },
@@ -520,7 +519,7 @@
             headerBg1: '#e8d5fc',
             headerBg2: '#d8b4fe',
             profileBorderColor: '#e8d5fc',
-            userName: 'Olga',
+            userName: '', // Aangepast: leeg gelaten zodat er geen vaste naam "Olga" verschijnt
             avatarImg: 'https://placehold.co/120x120/6366f1/ffffff?text=U',
             avatarShape: 'rounded-full',
             customWidgetTitle: 'Boodschappenlijst',
@@ -699,7 +698,8 @@
         function getDynamicGreeting(name) {
             const hour = new Date().getHours();
             let greeting = hour < 12 ? 'Goedemorgen' : (hour < 18 ? 'Goedemiddag' : 'Goedenavond');
-            return name ? `${greeting} ${name.trim()}!` : `${greeting}!`;
+            const trimmedName = name ? name.trim() : '';
+            return trimmedName ? `${greeting} ${trimmedName}!` : `${greeting}!`;
         }
 
         function renderWidgetManager() {
@@ -1128,6 +1128,15 @@
                     btn.classList.add('ring-2', 'ring-indigo-500');
                     document.getElementById('item-input-sticker').value = btn.dataset.sticker;
                 });
+            });
+
+            document.getElementById('setting-user-name').addEventListener('input', (e) => {
+                state.settings.userName = e.target.value;
+                document.getElementById('main-greeting-heading').innerText = getDynamicGreeting(state.settings.userName);
+                clearTimeout(window.userNameTimer);
+                window.userNameTimer = setTimeout(() => {
+                    saveSettingsToFirebase();
+                }, 800);
             });
 
             document.getElementById('item-form').addEventListener('submit', (e) => {
