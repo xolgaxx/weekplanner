@@ -315,14 +315,15 @@
                     </div>
                 </div>
 
+                <!-- Custom instellingen container (wordt getoond bij 'custom' preset) -->
                 <div id="custom-settings-container" class="space-y-4 pt-2 border-t border-gray-200/50 hidden">
                     <div class="space-y-3">
                         <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Kleuren Aanpassen</label>
                         <div class="grid grid-cols-2 gap-3 text-xs">
-                            <div><span class="block mb-1 font-medium">Achtergrond</span><input type="color" id="color-bg" class="w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5"></div>
-                            <div><span class="block mb-1 font-medium">Kaart Kleur</span><input type="color" id="color-card" class="w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5"></div>
-                            <div><span class="block mb-1 font-medium">Tekst Kleur</span><input type="color" id="color-text" class="w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5"></div>
-                            <div><span class="block mb-1 font-medium">Accent Kleur</span><input type="color" id="color-accent" class="w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5"></div>
+                            <div><span class="block mb-1 font-medium">Achtergrond</span><input type="color" id="color-bg" class="custom-color-picker w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5"></div>
+                            <div><span class="block mb-1 font-medium">Kaart Kleur</span><input type="color" id="color-card" class="custom-color-picker w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5"></div>
+                            <div><span class="block mb-1 font-medium">Tekst Kleur</span><input type="color" id="color-text" class="custom-color-picker w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5"></div>
+                            <div><span class="block mb-1 font-medium">Accent Kleur</span><input type="color" id="color-accent" class="custom-color-picker w-full h-8 rounded-lg cursor-pointer border border-gray-300 p-0.5"></div>
                         </div>
                     </div>
                 </div>
@@ -357,12 +358,10 @@
 
             <!-- RECHTER SECTIE: WIDGETS + WIDGET-INSTELLINGENMENU ONDERAAN -->
             <aside id="right-widgets-container" class="w-full lg:w-80 shrink-0 flex flex-col space-y-4">
-                <!-- 1. Widgets render gebied staat nu BOVENAAN -->
                 <div id="widgets-render-area" class="flex flex-col space-y-4"></div>
 
                 <hr class="border-gray-200/60 my-1">
 
-                <!-- 2. Bovenste balkje met widget-instellingenknop (nu ONDERAAN) -->
                 <div class="custom-card p-3 flex items-center justify-between shadow-sm">
                     <span class="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center gap-2">
                         <i class="fa-solid fa-puzzle-piece" style="color: var(--accent-color);"></i>
@@ -373,7 +372,6 @@
                     </button>
                 </div>
 
-                <!-- Uitklapbaar widget-instellingenmenu -->
                 <div id="widget-settings-dropdown" class="custom-card p-4 space-y-3 shadow-md hidden border border-purple-200">
                     <div class="flex items-center justify-between border-b pb-2 border-gray-200/50">
                         <span class="font-bold text-xs">Kies &amp; rangschik widgets</span>
@@ -519,7 +517,7 @@
             headerBg1: '#e8d5fc',
             headerBg2: '#d8b4fe',
             profileBorderColor: '#e8d5fc',
-            userName: '', // Aangepast: leeg gelaten zodat er geen vaste naam "Olga" verschijnt
+            userName: '',
             avatarImg: 'https://placehold.co/120x120/6366f1/ffffff?text=U',
             avatarShape: 'rounded-full',
             customWidgetTitle: 'Boodschappenlijst',
@@ -957,6 +955,14 @@
             document.getElementById('color-text').value = s.textColor;
             document.getElementById('color-accent').value = s.accentColor;
 
+            // Toon of verberg custom kleur instellingen op basis van actieve preset
+            const customContainer = document.getElementById('custom-settings-container');
+            if (s.activePreset === 'custom') {
+                customContainer.classList.remove('hidden');
+            } else {
+                customContainer.classList.add('hidden');
+            }
+
             updateLogoTheme();
         }
 
@@ -1137,6 +1143,29 @@
                 window.userNameTimer = setTimeout(() => {
                     saveSettingsToFirebase();
                 }, 800);
+            });
+
+            // Live aanpassen van custom kleuren wanneer je schuift in de kleurenpickers
+            document.querySelectorAll('.custom-color-picker').forEach(picker => {
+                picker.addEventListener('input', (e) => {
+                    const bg = document.getElementById('color-bg').value;
+                    const card = document.getElementById('color-card').value;
+                    const text = document.getElementById('color-text').value;
+                    const accent = document.getElementById('color-accent').value;
+
+                    state.settings.bgColor = bg;
+                    state.settings.cardColor = card;
+                    state.settings.textColor = text;
+                    state.settings.accentColor = accent;
+                    state.settings.headerBg1 = accent;
+                    state.settings.headerBg2 = accent;
+
+                    applySettingsUI();
+                    clearTimeout(window.colorSaveTimer);
+                    window.colorSaveTimer = setTimeout(() => {
+                        saveSettingsToFirebase();
+                    }, 600);
+                });
             });
 
             document.getElementById('item-form').addEventListener('submit', (e) => {
