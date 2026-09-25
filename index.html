@@ -181,40 +181,62 @@
 
     <!-- HOOFDAPPLICATIE -->
     <div id="app-screen" class="flex-1 flex flex-col hidden">
-        <!-- APP HEADER -->
+        <!-- APP HEADER (INCLUSIEF PROFIEL, FILTERS EN STATISTIEK) -->
         <header id="planner-header" class="custom-header p-4 md:p-6 shadow-lg relative overflow-hidden transition-all duration-300">
-            <div class="w-full flex flex-col lg:flex-row items-center justify-between gap-4 relative z-10 px-2 md:px-4">
+            <div class="w-full flex flex-col gap-4 relative z-10 px-2 md:px-4">
                 
-                <div class="w-full lg:w-auto flex justify-start lg:justify-start items-center gap-4">
-                    <div class="logo-crop-container">
-                        <img id="olgenda-logo-img" src="Olgenda-licht-thema.png" alt="Olgenda - Jouw No-Nonsense Agenda">
+                <!-- Bovenste rij van header: Logo, Week navigatie, Actieknoppen -->
+                <div class="w-full flex flex-col lg:flex-row items-center justify-between gap-4">
+                    <div class="w-full lg:w-auto flex justify-start items-center gap-4">
+                        <div class="logo-crop-container">
+                            <img id="olgenda-logo-img" src="Olgenda-licht-thema.png" alt="Olgenda - Jouw No-Nonsense Agenda">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2 bg-white/15 backdrop-blur-md p-1.5 rounded-xl border border-white/20">
+                        <button id="btn-prev-week" class="p-2 hover:bg-white/20 rounded-lg transition text-xs md:text-sm flex items-center gap-1 font-semibold" title="Vorige week">
+                            <i class="fa-solid fa-chevron-left"></i>
+                            <span class="hidden sm:inline">Vorige</span>
+                        </button>
+                        <button id="btn-today" class="px-3 py-1.5 bg-white text-gray-900 rounded-lg font-bold text-xs shadow-sm hover:bg-opacity-90 transition">
+                            Vandaag
+                        </button>
+                        <span id="current-week-label" class="px-2 text-xs md:text-sm font-bold tracking-wide">Week --</span>
+                        <button id="btn-next-week" class="p-2 hover:bg-white/20 rounded-lg transition text-xs md:text-sm flex items-center gap-1 font-semibold" title="Volgende week">
+                            <span class="hidden sm:inline">Volgende</span>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button id="btn-add-item-global" class="px-4 py-2.5 bg-white text-gray-900 hover:bg-opacity-90 rounded-xl text-sm font-bold flex items-center gap-2 transition shadow-md">
+                            <i class="fa-solid fa-plus" style="color: var(--accent-color);"></i>
+                            <span class="hidden sm:inline">Item Toevoegen</span>
+                        </button>
+                        <button onclick="logoutUser()" class="px-3 py-2.5 bg-red-500/80 hover:bg-red-600 text-white rounded-xl text-sm font-bold transition shadow-md" title="Uitloggen">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-2 bg-white/15 backdrop-blur-md p-1.5 rounded-xl border border-white/20">
-                    <button id="btn-prev-week" class="p-2 hover:bg-white/20 rounded-lg transition text-xs md:text-sm flex items-center gap-1 font-semibold" title="Vorige week">
-                        <i class="fa-solid fa-chevron-left"></i>
-                        <span class="hidden sm:inline">Vorige</span>
-                    </button>
-                    <button id="btn-today" class="px-3 py-1.5 bg-white text-gray-900 rounded-lg font-bold text-xs shadow-sm hover:bg-opacity-90 transition">
-                        Vandaag
-                    </button>
-                    <span id="current-week-label" class="px-2 text-xs md:text-sm font-bold tracking-wide">Week --</span>
-                    <button id="btn-next-week" class="p-2 hover:bg-white/20 rounded-lg transition text-xs md:text-sm flex items-center gap-1 font-semibold" title="Volgende week">
-                        <span class="hidden sm:inline">Volgende</span>
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </button>
+                <!-- Onderste rij in header: Profiel, Categorie-filters en Item Teller -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs opacity-95 pt-2 border-t border-white/20">
+                    <div class="flex items-center gap-3">
+                        <div class="relative group cursor-pointer shrink-0" id="header-avatar-container" title="Klik om instellingen te openen">
+                            <img id="header-avatar-img" src="https://placehold.co/120x120/6366f1/ffffff?text=U" alt="Profielfoto" class="profile-avatar-frame w-12 h-12 rounded-full object-cover border-2 shadow-md transition-transform duration-300 group-hover:scale-105">
+                            <div class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="fa-solid fa-camera text-white text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full" id="category-filter-bar"></div>
+
+                    <div class="flex items-center gap-3 shrink-0">
+                        <span id="total-items-badge" class="font-bold">0 Items deze week</span>
+                    </div>
                 </div>
 
-                <div class="flex items-center space-x-2">
-                    <button id="btn-add-item-global" class="px-4 py-2.5 bg-white text-gray-900 hover:bg-opacity-90 rounded-xl text-sm font-bold flex items-center gap-2 transition shadow-md">
-                        <i class="fa-solid fa-plus" style="color: var(--accent-color);"></i>
-                        <span class="hidden sm:inline">Item Toevoegen</span>
-                    </button>
-                    <button onclick="logoutUser()" class="px-3 py-2.5 bg-red-500/80 hover:bg-red-600 text-white rounded-xl text-sm font-bold transition shadow-md" title="Uitloggen">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                    </button>
-                </div>
             </div>
         </header>
 
@@ -223,7 +245,7 @@
 
             <div id="customizer-overlay" class="fixed inset-0 bg-black/40 z-30 hidden backdrop-blur-xs transition-opacity"></div>
 
-            <!-- CUSTOMIZER PANEL (HOOFDINSTELLINGEN - NU OVERZICHTELIJKER) -->
+            <!-- CUSTOMIZER PANEL (HOOFDINSTELLINGEN) -->
             <aside id="customizer-panel" class="hidden fixed lg:relative right-0 lg:right-auto top-0 lg:top-auto h-full lg:h-auto w-80 lg:w-80 shrink-0 custom-card p-5 space-y-6 z-40 max-h-screen lg:max-h-[85vh] overflow-y-auto shadow-2xl lg:shadow-md">
                 <div class="flex items-center justify-between border-b pb-3 border-gray-200/50">
                     <h2 class="font-bold text-lg flex items-center gap-2">
@@ -331,23 +353,6 @@
 
             <!-- HOOFDAGEN LIJST -->
             <main class="flex-1 flex flex-col space-y-5 min-w-0 w-full lg:w-auto">
-                
-                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs opacity-90 px-1">
-                    <div class="flex items-center gap-3">
-                        <div class="relative group cursor-pointer shrink-0" id="header-avatar-container" title="Klik om instellingen te openen">
-                            <img id="header-avatar-img" src="https://placehold.co/120x120/6366f1/ffffff?text=U" alt="Profielfoto" class="profile-avatar-frame w-14 h-14 md:w-16 md:h-16 rounded-full object-cover border-2 shadow-md transition-transform duration-300 group-hover:scale-105">
-                            <div class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <i class="fa-solid fa-camera text-white text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full" id="category-filter-bar"></div>
-
-                    <div class="flex items-center gap-3 shrink-0">
-                        <span id="total-items-badge" class="font-bold">0 Items deze week</span>
-                    </div>
-                </div>
 
                 <div id="greeting-banner-container" class="px-1">
                     <h1 id="main-greeting-heading" class="text-xl md:text-2xl font-extrabold tracking-tight">Goedemorgen Olga! 👋</h1>
@@ -357,7 +362,7 @@
                 </div>
             </main>
 
-            <!-- RECHTER SECTIE: WIDGETS + APART WIDGET-INSTELLINGENMENU -->
+            <!-- RECHTER SECTIE: WIDGETS + WIDGET-INSTELLINGENMENU -->
             <aside id="right-widgets-container" class="w-full lg:w-80 shrink-0 flex flex-col space-y-4 sticky top-6">
                 <!-- Bovenste balkje met widget-instellingenknop -->
                 <div class="custom-card p-3 flex items-center justify-between shadow-sm">
@@ -370,7 +375,7 @@
                     </button>
                 </div>
 
-                <!-- Uitklapbaar widget-instellingenmenu (standaard verborgen) -->
+                <!-- Uitklapbaar widget-instellingenmenu -->
                 <div id="widget-settings-dropdown" class="custom-card p-4 space-y-3 shadow-md hidden border border-purple-200">
                     <div class="flex items-center justify-between border-b pb-2 border-gray-200/50">
                         <span class="font-bold text-xs">Kies &amp; rangschik widgets</span>
@@ -380,7 +385,7 @@
                     <div id="widget-manager-list" class="space-y-2"></div>
                 </div>
 
-                <!-- De daadwerkelijke widgets komen hieronder -->
+                <!-- Widgets render gebied -->
                 <div id="widgets-render-area" class="flex flex-col space-y-4"></div>
             </aside>
 
@@ -925,11 +930,11 @@
             });
 
             const isAllSelected = state.selectedCategoryFilter === 'all';
-            filterContainer.innerHTML = `<button class="cat-filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${isAllSelected ? 'text-white' : 'bg-gray-200/60 text-gray-700'}" ${isAllSelected ? `style="background-color: var(--accent-color);"` : ''} data-cat-id="all">Alle</button>`;
+            filterContainer.innerHTML = `<button class="cat-filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${isAllSelected ? 'text-white bg-black/30' : 'bg-white/20 hover:bg-white/30 text-white'}" data-cat-id="all">Alle</button>`;
             
             state.settings.categories.forEach(cat => {
                 const isSelected = state.selectedCategoryFilter === cat.id;
-                filterContainer.innerHTML += `<button class="cat-filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${isSelected ? 'text-white' : 'bg-gray-100 text-gray-700'}" ${isSelected ? `style="background-color: ${cat.color}"` : ''} data-cat-id="${cat.id}"><span class="w-2 h-2 rounded-full" style="background-color: ${cat.color}"></span>${escapeHtml(cat.name)}</button>`;
+                filterContainer.innerHTML += `<button class="cat-filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${isSelected ? 'text-white bg-black/30' : 'bg-white/20 hover:bg-white/30 text-white'}" data-cat-id="${cat.id}"><span class="w-2 h-2 rounded-full" style="background-color: ${cat.color}"></span>${escapeHtml(cat.name)}</button>`;
             });
 
             filterContainer.querySelectorAll('.cat-filter-btn').forEach(btn => {
