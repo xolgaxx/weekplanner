@@ -15,6 +15,10 @@
     
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- Firebase SDK (Compat versies voor eenvoudige integratie) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     
     <style>
         :root {
@@ -256,7 +260,7 @@
                 </div>
             </div>
 
-            <!-- Theme Presets (Emmy, Isabel, Floris, Olga + Custom) -->
+            <!-- Theme Presets -->
             <div class="space-y-2 pt-2 border-t border-gray-200/50">
                 <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Thema Presets</label>
                 <div class="grid grid-cols-2 gap-2">
@@ -278,10 +282,9 @@
                 </div>
             </div>
 
-            <!-- CUSTOM SETTINGS CONTAINER (Alleen zichtbaar bij 'Jouw Custom Thema') -->
+            <!-- CUSTOM SETTINGS CONTAINER -->
             <div id="custom-settings-container" class="space-y-4 pt-2 border-t border-gray-200/50 hidden">
                 
-                <!-- Custom Colors Picker Section -->
                 <div class="space-y-3">
                     <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Kleuren Aanpassen</label>
                     <div class="grid grid-cols-2 gap-3 text-xs">
@@ -304,7 +307,6 @@
                     </div>
                 </div>
 
-                <!-- Header Gradient Styling -->
                 <div class="space-y-2">
                     <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Header Stijl</label>
                     <div class="grid grid-cols-2 gap-2 text-xs">
@@ -319,7 +321,6 @@
                     </div>
                 </div>
 
-                <!-- Shapes & Corners -->
                 <div class="space-y-2">
                     <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Vorm &amp; Randen</label>
                     <div class="space-y-2">
@@ -352,16 +353,6 @@
                 <label class="text-xs font-bold uppercase tracking-wider text-gray-500">Lettertype (Typography)</label>
                 <select id="setting-font" class="w-full p-2.5 rounded-xl border border-gray-300 text-xs">
                     <option value="font-quicksand">Quicksand (Zacht &amp; Vriendelijk)</option>
-                    <option value="font-inter">Inter (Strak &amp; Modern)</option>
-                    <option value="font-poppins">Poppins (Afgerond &amp; Hip)</option>
-                    <option value="font-montserrat">Montserrat (Stoer &amp; Duidelijk)</option>
-                    <option value="font-fredoka">Fredoka (Vrolijk &amp; Dik)</option>
-                    <option value="font-caveat">Caveat (Handgeschreven Speels)</option>
-                    <option value="font-indie">Indie Flower (Casual Krabbel)</option>
-                    <option value="font-playfair">Playfair Display (Klassiek Luxe)</option>
-                    <option value="font-spacemono">Space Mono (Tech &amp; Code)</option>
-                    <option value="font-retro">Press Start 2P (Retro Pixel)</option>
-                    <option value="font-comic">Comic Neue (Informeel)</option>
                 </select>
             </div>
 
@@ -397,7 +388,7 @@
 
                     <div class="flex items-center gap-2">
                         <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span class="font-medium">Automatisch opgeslagen</span>
+                        <span class="font-medium">Firebase Database Verbonden</span>
                     </div>
                 </div>
 
@@ -520,6 +511,21 @@
     </div>
 
     <script>
+        // --- FIREBASE CONFIGURATIE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyA861FoEtfcy7p4369sJUJ-OZIJiOXEn5A",
+            authDomain: "olgenda-9bf5f.firebaseapp.com",
+            projectId: "olgenda-9bf5f",
+            storageBucket: "olgenda-9bf5f.firebasestorage.app",
+            messagingSenderId: "13330878107",
+            appId: "1:13330878107:web:bdaf88009733369f17003e",
+            measurementId: "G-65R9MKHKRZ"
+        };
+
+        // Initialiseer Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         const DAYS_NL = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag'];
         
         const DEFAULT_CATEGORIES = [
@@ -549,62 +555,26 @@
             categories: DEFAULT_CATEGORIES
         };
 
-        // PRESETS (kleuren per thema, lettertype blijft altijd Quicksand)
         const PRESETS = {
             emmy: { 
-                bgColor: '#f9f5fb', 
-                cardColor: '#ffffff', 
-                textColor: '#1a1025', 
-                accentColor: '#7e22ce', 
-                headerBg1: '#e8d5fc', 
-                headerBg2: '#d8b4fe', 
-                profileBorderColor: '#e8d5fc',
-                radius: '20px', 
-                borderStyle: 'solid'
+                bgColor: '#f9f5fb', cardColor: '#ffffff', textColor: '#1a1025', accentColor: '#7e22ce', 
+                headerBg1: '#e8d5fc', headerBg2: '#d8b4fe', profileBorderColor: '#e8d5fc', radius: '20px', borderStyle: 'solid'
             },
             isabel: { 
-                bgColor: '#e2f3ea', 
-                cardColor: '#ffffff', 
-                textColor: '#0a1d17', 
-                accentColor: '#0f9f8c', 
-                headerBg1: '#59937d', 
-                headerBg2: '#a4e8d2', 
-                profileBorderColor: '#59937d',
-                radius: '16px', 
-                borderStyle: 'solid'
+                bgColor: '#e2f3ea', cardColor: '#ffffff', textColor: '#0a1d17', accentColor: '#0f9f8c', 
+                headerBg1: '#59937d', headerBg2: '#a4e8d2', profileBorderColor: '#59937d', radius: '16px', borderStyle: 'solid'
             },
             floris: { 
-                bgColor: '#41698e', 
-                cardColor: '#516885', 
-                textColor: '#e8eff7', 
-                accentColor: '#1d3f94', 
-                headerBg1: '#375a7f', 
-                headerBg2: '#b8d2ef', 
-                profileBorderColor: '#1d3f94',
-                radius: '12px', 
-                borderStyle: 'solid'
+                bgColor: '#41698e', cardColor: '#516885', textColor: '#e8eff7', accentColor: '#1d3f94', 
+                headerBg1: '#375a7f', headerBg2: '#b8d2ef', profileBorderColor: '#1d3f94', radius: '12px', borderStyle: 'solid'
             },
             olga: { 
-                bgColor: '#fbf5f0', 
-                cardColor: '#ffffff', 
-                textColor: '#63200b', 
-                accentColor: '#f77383', 
-                headerBg1: '#f8cde2', 
-                headerBg2: '#f58296', 
-                profileBorderColor: '#f8cde2',
-                radius: '24px', 
-                borderStyle: 'solid'
+                bgColor: '#fbf5f0', cardColor: '#ffffff', textColor: '#63200b', accentColor: '#f77383', 
+                headerBg1: '#f8cde2', headerBg2: '#f58296', profileBorderColor: '#f8cde2', radius: '24px', borderStyle: 'solid'
             },
             custom: { 
-                bgColor: '#f8fafc', 
-                cardColor: '#ffffff', 
-                textColor: '#0f172a', 
-                accentColor: '#6366f1', 
-                headerBg1: '#4f46e5', 
-                headerBg2: '#7c3aed', 
-                profileBorderColor: '#ffffff',
-                radius: '16px', 
-                borderStyle: 'solid'
+                bgColor: '#f8fafc', cardColor: '#ffffff', textColor: '#0f172a', accentColor: '#6366f1', 
+                headerBg1: '#4f46e5', headerBg2: '#7c3aed', profileBorderColor: '#ffffff', radius: '16px', borderStyle: 'solid'
             }
         };
 
@@ -615,31 +585,58 @@
             settings: { ...DEFAULT_SETTINGS }
         };
 
-        function loadState() {
+        // --- DATABASE LADEN & OPSLAAN (FIRESTORE) ---
+        async function loadState() {
             try {
-                const savedItems = localStorage.getItem('planner_items_v8');
-                const savedSettings = localStorage.getItem('planner_settings_v8');
-                if (savedItems) state.items = JSON.parse(savedItems);
-                if (savedSettings) state.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) };
-                
-                // Altijd Quicksand forceren als font
-                state.settings.font = 'font-quicksand';
+                // 1. Haal instellingen op uit Firestore
+                const settingsDoc = await db.collection('olgenda_data').doc('settings').get();
+                if (settingsDoc.exists) {
+                    state.settings = { ...DEFAULT_SETTINGS, ...settingsDoc.data() };
+                }
 
+                // 2. Haal items op uit Firestore
+                const itemsSnapshot = await db.collection('olgenda_items').get();
+                state.items = [];
+                itemsSnapshot.forEach(doc => {
+                    state.items.push({ id: doc.id, ...doc.data() });
+                });
+
+                state.settings.font = 'font-quicksand';
                 if (!state.settings.categories || state.settings.categories.length === 0) {
                     state.settings.categories = [...DEFAULT_CATEGORIES];
                 }
             } catch (e) {
-                console.error("Fout bij laden:", e);
+                console.error("Fout bij laden vanuit Firebase:", e);
+                // Fallback naar localStorage indien netwerk faalt
+                const savedItems = localStorage.getItem('planner_items_v8');
+                const savedSettings = localStorage.getItem('planner_settings_v8');
+                if (savedItems) state.items = JSON.parse(savedItems);
+                if (savedSettings) state.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) };
             }
         }
 
-        function saveState() {
+        async function saveSettingsToFirebase() {
             try {
                 state.settings.font = 'font-quicksand';
-                localStorage.setItem('planner_items_v8', JSON.stringify(state.items));
-                localStorage.setItem('planner_settings_v8', JSON.stringify(state.settings));
+                await db.collection('olgenda_data').doc('settings').set(state.settings);
             } catch (e) {
-                console.error("Fout bij opslaan:", e);
+                console.error("Fout bij opslaan van instellingen in Firebase:", e);
+            }
+        }
+
+        async function saveItemToFirebase(item) {
+            try {
+                await db.collection('olgenda_items').doc(item.id).set(item);
+            } catch (e) {
+                console.error("Fout bij opslaan van item in Firebase:", e);
+            }
+        }
+
+        async function deleteItemFromFirebase(itemId) {
+            try {
+                await db.collection('olgenda_items').doc(itemId).delete();
+            } catch (e) {
+                console.error("Fout bij verwijderen van item in Firebase:", e);
             }
         }
 
@@ -735,7 +732,7 @@
                 inp.addEventListener('input', (e) => {
                     const idx = parseInt(e.target.dataset.index);
                     state.settings.categories[idx].color = e.target.value;
-                    saveState();
+                    saveSettingsToFirebase();
                     renderCategoryManager();
                     renderPlanner();
                 });
@@ -745,7 +742,7 @@
                 inp.addEventListener('change', (e) => {
                     const idx = parseInt(e.target.dataset.index);
                     state.settings.categories[idx].name = e.target.value.trim() || 'Categorie';
-                    saveState();
+                    saveSettingsToFirebase();
                     renderCategoryManager();
                     renderPlanner();
                 });
@@ -755,7 +752,7 @@
                 btn.addEventListener('click', (e) => {
                     const idx = parseInt(e.currentTarget.dataset.index);
                     state.settings.categories.splice(idx, 1);
-                    saveState();
+                    saveSettingsToFirebase();
                     renderCategoryManager();
                     renderPlanner();
                 });
@@ -824,7 +821,6 @@
                 root.style.setProperty('--shadow-val', '0 4px 6px -1px rgb(0 0 0 / 0.1)');
             }
 
-            // Altijd Quicksand forceren voor de body
             document.body.className = `min-h-screen flex flex-col transition-colors duration-300 font-quicksand`;
 
             const avatarImg = document.getElementById('header-avatar-img');
@@ -1081,7 +1077,7 @@
                 if (item.completed && typeof confetti === 'function') {
                     confetti({ particleCount: 35, spread: 50, origin: { y: 0.7 } });
                 }
-                saveState();
+                saveItemToFirebase(item);
                 renderPlanner();
             });
 
@@ -1093,7 +1089,7 @@
             itemEl.querySelector('.btn-delete-item').addEventListener('click', (e) => {
                 e.stopPropagation();
                 state.items = state.items.filter(t => t.id !== item.id);
-                saveState();
+                deleteItemFromFirebase(item.id);
                 renderPlanner();
             });
 
@@ -1128,7 +1124,7 @@
                 if (item) {
                     item.dayIndex = dayIndex;
                     item.weekKey = weekKey;
-                    saveState();
+                    saveItemToFirebase(item);
                     renderPlanner();
                 }
             });
@@ -1241,7 +1237,7 @@
                     };
                     state.settings.categories.push(newCat);
                     nameInp.value = '';
-                    saveState();
+                    saveSettingsToFirebase();
                     renderCategoryManager();
                     renderPlanner();
                 }
@@ -1254,7 +1250,7 @@
                     reader.onload = function(evt) {
                         state.settings.avatarImg = evt.target.result;
                         applySettingsUI();
-                        saveState();
+                        saveSettingsToFirebase();
                     };
                     reader.readAsDataURL(file);
                 }
@@ -1298,7 +1294,7 @@
                     state.items.push(itemData);
                 }
 
-                saveState();
+                saveItemToFirebase(itemData);
                 renderPlanner();
                 closeItemModal();
             });
@@ -1309,17 +1305,16 @@
                     state.settings.activePreset = 'custom';
                     if(id === 'color-header-1' || id === 'color-header-2') updateLogoTheme();
                     applySettingsUIFromInputs();
-                    saveState();
+                    saveSettingsToFirebase();
                 });
                 document.getElementById(id).addEventListener('change', () => {
                     state.settings.activePreset = 'custom';
                     if(id === 'color-header-1' || id === 'color-header-2') updateLogoTheme();
                     applySettingsUIFromInputs();
-                    saveState();
+                    saveSettingsToFirebase();
                 });
             });
 
-            // Font select element locked to Quicksand
             document.getElementById('setting-font').addEventListener('change', () => {
                 document.getElementById('setting-font').value = 'font-quicksand';
             });
@@ -1327,7 +1322,7 @@
             document.getElementById('setting-show-spotlight').addEventListener('change', (e) => { 
                 state.settings.showSpotlight = e.target.checked; 
                 renderPlanner(); 
-                saveState(); 
+                saveSettingsToFirebase(); 
             });
 
             document.querySelectorAll('.preset-btn').forEach(btn => {
@@ -1337,7 +1332,7 @@
                         state.settings = { ...state.settings, ...PRESETS[key], activePreset: key, font: 'font-quicksand' };
                         applySettingsUI();
                         renderPlanner();
-                        saveState();
+                        saveSettingsToFirebase();
                         updateLogoTheme();
                     }
                 });
@@ -1370,7 +1365,7 @@
                             applySettingsUI();
                             renderCategoryManager();
                             renderPlanner();
-                            saveState();
+                            saveSettingsToFirebase();
                             updateLogoTheme();
                         }
                     } catch (err) {
@@ -1380,16 +1375,21 @@
                 reader.readAsText(file);
             });
 
-            document.getElementById('btn-reset-data').addEventListener('click', () => {
-                localStorage.clear();
-                state.items = [];
-                state.settings = { ...DEFAULT_SETTINGS };
-                applySettingsUI();
-                renderCategoryManager();
-                renderPlanner();
-                saveState();
-                updateLogoTheme();
+            document.getElementById('btn-reset-data').addEventListener('click', async () => {
+                if (confirmWilJeResetten()) {
+                    state.items = [];
+                    state.settings = { ...DEFAULT_SETTINGS };
+                    await saveSettingsToFirebase();
+                    applySettingsUI();
+                    renderCategoryManager();
+                    renderPlanner();
+                    updateLogoTheme();
+                }
             });
+        }
+
+        function confirmWilJeResetten() {
+            return confirm("Weet je zeker dat je alle data wilt resetten?");
         }
 
         function applySettingsUIFromInputs() {
@@ -1408,8 +1408,9 @@
             applySettingsUI();
         }
 
-        window.onload = function () {
-            loadState();
+        // --- OPSTARTEN MET FIREBASE ---
+        window.onload = async function () {
+            await loadState(); // Wacht tot data uit Firebase is geladen
             applySettingsUI();
             renderCategoryManager();
             renderPlanner();
