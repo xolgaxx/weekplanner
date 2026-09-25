@@ -341,11 +341,6 @@
                                 <i class="fa-solid fa-camera text-white text-xs"></i>
                             </div>
                         </div>
-
-                        <div class="flex items-center gap-2">
-                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span class="font-medium">Cloud Database Verbonden</span>
-                        </div>
                     </div>
 
                     <div class="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full" id="category-filter-bar"></div>
@@ -725,7 +720,6 @@
                 selectContainer.innerHTML += `<option value="${cat.id}">${escapeHtml(cat.name)}</option>`;
             });
 
-            // GECORRIGEERD: "Alle" knop gebruikt nu dynamisch de accentkleur via inline style of variabele
             const isAllSelected = state.selectedCategoryFilter === 'all';
             filterContainer.innerHTML = `<button class="cat-filter-btn px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${isAllSelected ? 'text-white' : 'bg-gray-200/60 text-gray-700'}" ${isAllSelected ? `style="background-color: var(--accent-color);"` : ''} data-cat-id="all">Alle</button>`;
             
@@ -813,7 +807,6 @@
                 totalItems += dayItems.length;
 
                 const dayCard = document.createElement('div');
-                // GECORRIGEERD: Vandaag rand gebruikt nu ook dynamisch var(--accent-color)
                 dayCard.className = `custom-card flex flex-col p-4 transition-all duration-200 ${isToday ? 'shadow-md' : ''}`;
                 if (isToday) {
                     dayCard.style.boxShadow = '0 0 0 2px var(--accent-color)';
