@@ -75,14 +75,14 @@
         }
 
         .logo-crop-container {
-            height: 48px;
+            height: 40px;
             overflow: hidden;
             display: flex;
             align-items: center;
         }
         @media (min-width: 768px) {
             .logo-crop-container {
-                height: 56px;
+                height: 48px;
             }
         }
         .logo-crop-container img {
@@ -181,60 +181,53 @@
 
     <!-- HOOFDAPPLICATIE -->
     <div id="app-screen" class="flex-1 flex flex-col hidden">
-        <!-- APP HEADER (INCLUSIEF PROFIEL, FILTERS EN STATISTIEK) -->
-        <header id="planner-header" class="custom-header p-4 md:p-6 shadow-lg relative overflow-hidden transition-all duration-300">
-            <div class="w-full flex flex-col gap-4 relative z-10 px-2 md:px-4">
+        <!-- COMPACTE APP HEADER -->
+        <header id="planner-header" class="custom-header py-3 px-4 md:px-6 shadow-md relative overflow-hidden transition-all duration-300">
+            <div class="w-full flex flex-wrap items-center justify-between gap-3 relative z-10">
                 
-                <!-- Bovenste rij van header: Logo, Week navigatie, Actieknoppen -->
-                <div class="w-full flex flex-col lg:flex-row items-center justify-between gap-4">
-                    <div class="w-full lg:w-auto flex justify-start items-center gap-4">
-                        <div class="logo-crop-container">
-                            <img id="olgenda-logo-img" src="Olgenda-licht-thema.png" alt="Olgenda - Jouw No-Nonsense Agenda">
+                <!-- Links: Logo, Profiel en Categorie-filters -->
+                <div class="flex items-center gap-4 flex-wrap">
+                    <div class="logo-crop-container">
+                        <img id="olgenda-logo-img" src="Olgenda-licht-thema.png" alt="Olgenda - Jouw No-Nonsense Agenda">
+                    </div>
+
+                    <!-- Profielfoto -->
+                    <div class="relative group cursor-pointer shrink-0" id="header-avatar-container" title="Klik om instellingen te openen">
+                        <img id="header-avatar-img" src="https://placehold.co/120x120/6366f1/ffffff?text=U" alt="Profielfoto" class="profile-avatar-frame w-10 h-10 rounded-full object-cover border-2 shadow-sm transition-transform duration-300 group-hover:scale-105">
+                        <div class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i class="fa-solid fa-camera text-white text-[10px]"></i>
                         </div>
                     </div>
 
-                    <div class="flex items-center space-x-2 bg-white/15 backdrop-blur-md p-1.5 rounded-xl border border-white/20">
-                        <button id="btn-prev-week" class="p-2 hover:bg-white/20 rounded-lg transition text-xs md:text-sm flex items-center gap-1 font-semibold" title="Vorige week">
+                    <!-- Categorie-filters -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto max-w-full" id="category-filter-bar"></div>
+                </div>
+
+                <!-- Rechts: Week navigatie, Item teller, Actieknoppen -->
+                <div class="flex items-center gap-3 flex-wrap">
+                    <span id="total-items-badge" class="text-xs font-bold hidden xl:inline">0 Items deze week</span>
+
+                    <div class="flex items-center space-x-1.5 bg-white/15 backdrop-blur-md p-1 rounded-xl border border-white/20">
+                        <button id="btn-prev-week" class="p-1.5 hover:bg-white/20 rounded-lg transition text-xs font-semibold" title="Vorige week">
                             <i class="fa-solid fa-chevron-left"></i>
-                            <span class="hidden sm:inline">Vorige</span>
                         </button>
-                        <button id="btn-today" class="px-3 py-1.5 bg-white text-gray-900 rounded-lg font-bold text-xs shadow-sm hover:bg-opacity-90 transition">
+                        <button id="btn-today" class="px-2.5 py-1 bg-white text-gray-900 rounded-lg font-bold text-xs shadow-sm hover:bg-opacity-90 transition">
                             Vandaag
                         </button>
-                        <span id="current-week-label" class="px-2 text-xs md:text-sm font-bold tracking-wide">Week --</span>
-                        <button id="btn-next-week" class="p-2 hover:bg-white/20 rounded-lg transition text-xs md:text-sm flex items-center gap-1 font-semibold" title="Volgende week">
-                            <span class="hidden sm:inline">Volgende</span>
+                        <span id="current-week-label" class="px-1 text-xs font-bold tracking-wide">Week --</span>
+                        <button id="btn-next-week" class="p-1.5 hover:bg-white/20 rounded-lg transition text-xs font-semibold" title="Volgende week">
                             <i class="fa-solid fa-chevron-right"></i>
                         </button>
                     </div>
 
-                    <div class="flex items-center space-x-2">
-                        <button id="btn-add-item-global" class="px-4 py-2.5 bg-white text-gray-900 hover:bg-opacity-90 rounded-xl text-sm font-bold flex items-center gap-2 transition shadow-md">
-                            <i class="fa-solid fa-plus" style="color: var(--accent-color);"></i>
-                            <span class="hidden sm:inline">Item Toevoegen</span>
-                        </button>
-                        <button onclick="logoutUser()" class="px-3 py-2.5 bg-red-500/80 hover:bg-red-600 text-white rounded-xl text-sm font-bold transition shadow-md" title="Uitloggen">
-                            <i class="fa-solid fa-right-from-bracket"></i>
-                        </button>
-                    </div>
-                </div>
+                    <button id="btn-add-item-global" class="px-3 py-2 bg-white text-gray-900 hover:bg-opacity-90 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+                        <i class="fa-solid fa-plus" style="color: var(--accent-color);"></i>
+                        <span class="hidden sm:inline">Toevoegen</span>
+                    </button>
 
-                <!-- Onderste rij in header: Profiel, Categorie-filters en Item Teller -->
-                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs opacity-95 pt-2 border-t border-white/20">
-                    <div class="flex items-center gap-3">
-                        <div class="relative group cursor-pointer shrink-0" id="header-avatar-container" title="Klik om instellingen te openen">
-                            <img id="header-avatar-img" src="https://placehold.co/120x120/6366f1/ffffff?text=U" alt="Profielfoto" class="profile-avatar-frame w-12 h-12 rounded-full object-cover border-2 shadow-md transition-transform duration-300 group-hover:scale-105">
-                            <div class="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <i class="fa-solid fa-camera text-white text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full" id="category-filter-bar"></div>
-
-                    <div class="flex items-center gap-3 shrink-0">
-                        <span id="total-items-badge" class="font-bold">0 Items deze week</span>
-                    </div>
+                    <button onclick="logoutUser()" class="p-2 bg-red-500/80 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition shadow-sm" title="Uitloggen">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
                 </div>
 
             </div>
@@ -1109,7 +1102,6 @@
             document.getElementById('header-avatar-container').addEventListener('click', () => document.getElementById('customizer-panel').classList.remove('hidden'));
             document.getElementById('btn-close-customizer').addEventListener('click', () => document.getElementById('customizer-panel').classList.add('hidden'));
 
-            // Widget instellingenmenu openen/sluiten
             const widgetDropdown = document.getElementById('widget-settings-dropdown');
             document.getElementById('btn-toggle-widget-settings').addEventListener('click', () => {
                 widgetDropdown.classList.toggle('hidden');
