@@ -51,7 +51,6 @@
         .custom-card:hover {
             box-shadow: 0 4px 20px -2px rgba(140, 122, 107, 0.1);
         }
-        /* Ronde bolletjes afvinkknoppen */
         .checkbox-circle {
             width: 1.25rem;
             height: 1.25rem;
@@ -104,8 +103,14 @@
         <header class="w-full bg-white border-b border-beige-200 py-4 px-6 mb-6 shadow-sm sticky top-0 z-30">
             <div class="max-w-7xl mx-auto flex justify-between items-center">
                 <div class="flex items-center space-x-3">
-                    <h1 class="text-2xl font-bold tracking-tight text-beige-700">Olgenda</h1>
-                    <span class="text-xs bg-beige-100 text-beige-600 px-2.5 py-1 rounded-full font-medium">Digital Life Planner</span>
+                    <!-- Logo & Profiel -->
+                    <div id="header-profile-container" class="flex items-center space-x-3">
+                        <img id="header-avatar-img" src="" alt="Profielfoto" class="w-10 h-10 rounded-full object-cover border border-beige-300 hidden">
+                        <div>
+                            <h1 id="header-logo-text" class="text-2xl font-bold tracking-tight text-beige-700">Olgenda</h1>
+                            <span class="text-xs bg-beige-100 text-beige-600 px-2.5 py-1 rounded-full font-medium">Digital Life Planner</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="flex items-center space-x-4">
                     <button id="btn-settings-open" class="text-xs bg-beige-100 hover:bg-beige-200 text-beige-700 px-3.5 py-2 rounded-xl transition-colors font-medium flex items-center space-x-1.5">
@@ -117,7 +122,7 @@
             </div>
         </header>
 
-        <!-- Main Content Grid (Elke sectie in eigen losse container) -->
+        <!-- Main Content Grid -->
         <main class="max-w-7xl mx-auto w-full px-4 flex-grow grid grid-cols-1 lg:grid-cols-4 gap-6 pb-12">
             
             <!-- Linkerkant / Weekplanner (3 kolommen breed) -->
@@ -141,9 +146,9 @@
                     </div>
                 </div>
 
-                <!-- Dagen Raster (Dynamisch geladen) -->
+                <!-- Dagen Raster (Dynamisch Maandag t/m Zondag) -->
                 <div id="week-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Wordt dynamisch gevuld met dagen (Maandag t/m Zondag) -->
+                    <!-- Wordt dynamisch gevuld -->
                 </div>
             </section>
 
@@ -158,7 +163,7 @@
                     <textarea id="notepad-input" rows="4" class="w-full p-3 text-sm border border-beige-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-beige-400 bg-beige-50/50 resize-none text-beige-700" placeholder="Schrijf hier je snelle notities..."></textarea>
                 </div>
 
-                <!-- Afvinklijst / Boodschappen Widget met Ronde Bolletjes -->
+                <!-- Boodschappenlijst / Checklist Widget met Ronde Bolletjes -->
                 <div id="widget-checklist" class="custom-card p-5">
                     <h3 class="font-semibold text-beige-700 mb-3 flex items-center space-x-2">
                         <i class="fa-solid fa-list-check text-beige-500"></i>
@@ -174,6 +179,29 @@
                 </div>
             </aside>
         </main>
+    </div>
+
+    <!-- Instellingen Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/30 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="custom-card bg-white max-w-lg w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-beige-100 pb-3">
+                <h3 class="font-bold text-beige-700 text-lg">Instellingen & Profiel</h3>
+                <button id="settings-modal-close" class="text-beige-400 hover:text-beige-700 font-bold">✕</button>
+            </div>
+            <div class="space-y-4 text-sm">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-beige-500 mb-1">Jouw Naam / Titel</label>
+                    <input type="text" id="setting-name-input" class="w-full px-3 py-2 rounded-xl border border-beige-200 bg-beige-50/50" placeholder="Bijv. Olga's Planner">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-beige-500 mb-1">Profielfoto Uploaden</label>
+                    <input type="file" id="setting-avatar-input" accept="image/*" class="w-full text-xs text-beige-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-beige-100 file:text-beige-700 hover:file:bg-beige-200">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2 border-t border-beige-100">
+                    <button id="settings-modal-save" class="px-4 py-2 bg-beige-700 text-white rounded-xl text-xs font-medium hover:bg-beige-600">Opslaan</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Item Modal (Inplannen met 5-minuten stappen) -->
@@ -207,9 +235,24 @@
         </div>
     </div>
 
-    <!-- Basis JavaScript Logica -->
+    <!-- JavaScript Logica -->
     <script>
-        // Simuleer direct inloggen voor preview & test
+        let currentWeekOffset = 0;
+        let plannerItems = [
+            { id: 1, title: 'Koffie drinken met vriendin', date: new Date().toISOString().split('T')[0], time: '10:00' }
+        ];
+
+        let checklistItems = [
+            { id: 1, text: 'Havermelk en bananen halen', done: false },
+            { id: 2, text: 'Weekboodschappen bio-markt', done: true }
+        ];
+
+        let settings = {
+            name: 'Olgenda',
+            avatarImg: ''
+        };
+
+        // Inlog simulatie
         document.getElementById('auth-form').addEventListener('submit', (e) => {
             e.preventDefault();
             document.getElementById('auth-screen').classList.add('hidden');
@@ -228,22 +271,93 @@
             document.getElementById('auth-screen').classList.remove('hidden');
         });
 
-        // Mock app initialisatie
         function initApp() {
-            document.getElementById('current-week-label').innerText = 'Week 14 (Voorbeeld)';
+            renderWeekPlanner();
             renderChecklist();
+            applySettingsUI();
         }
 
-        // Voorbeeld checklist met ronde bolletjes
-        let checklistItems = [
-            { id: 1, text: 'Havermelk en bananen halen', done: false },
-            { id: 2, text: 'Weekboodschappen bio-markt', done: true }
-        ];
+        // Dagen raster genereren (Maandag t/m Zondag)
+        function getStartOfWeek(offset = 0) {
+            const now = new Date();
+            const day = now.getDay();
+            const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(now.getFullYear(), now.getMonth(), diff + (offset * 7));
+            monday.setHours(0,0,0,0);
+            return monday;
+        }
 
+        function renderWeekPlanner() {
+            const grid = document.getElementById('week-grid');
+            grid.innerHTML = '';
+            
+            const startMonday = getStartOfWeek(currentWeekOffset);
+            const weekNumber = getWeekNumber(startMonday);
+            document.getElementById('current-week-label').innerText = `Week ${weekNumber}`;
+
+            const days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag'];
+            
+            days.forEach((dayName, index) => {
+                const currentDayDate = new Date(startMonday);
+                currentDayDate.setDate(startMonday.getDate() + index);
+                const dateString = currentDayDate.toISOString().split('T')[0];
+                const isToday = new Date().toISOString().split('T')[0] === dateString;
+
+                const dayCard = document.createElement('div');
+                dayCard.className = `custom-card p-4 flex flex-col justify-between ${isToday ? 'ring-2 ring-beige-400 bg-beige-50/30' : 'bg-white'}`;
+                
+                // Filter items voor deze dag
+                const dayItems = plannerItems.filter(item => item.date === dateString);
+
+                let itemsHtml = dayItems.map(item => `
+                    <div class="bg-beige-50 border border-beige-200 rounded-lg p-2.5 text-xs flex justify-between items-center mb-2">
+                        <div>
+                            <span class="font-semibold text-beige-700">${item.title}</span>
+                            ${item.time ? `<div class="text-beige-500 text-[10px]"><i class="fa-regular fa-clock"></i> ${item.time}</div>` : ''}
+                        </div>
+                        <button onclick="removeItem(${item.id})" class="text-beige-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                `).join('');
+
+                if (dayItems.length === 0) {
+                    itemsHtml = `<p class="text-xs text-beige-400 italic py-2">Geen plannen</p>`;
+                }
+
+                dayCard.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-center mb-3 pb-2 border-b border-beige-100">
+                            <span class="font-bold text-beige-700 text-sm">${dayName}</span>
+                            <span class="text-xs text-beige-500">${currentDayDate.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}</span>
+                        </div>
+                        <div class="space-y-1">${itemsHtml}</div>
+                    </div>
+                    <button onclick="openAddModalForDate('${dateString}')" class="mt-3 w-full py-1.5 bg-beige-50 hover:bg-beige-100 text-beige-700 rounded-lg text-xs font-medium transition-colors border border-beige-200 flex items-center justify-center space-x-1">
+                        <i class="fa-solid fa-plus text-[10px]"></i>
+                        <span>Taak toevoegen</span>
+                    </button>
+                `;
+                grid.appendChild(dayCard);
+            });
+        }
+
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+            var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+            return weekNo;
+        }
+
+        // Week navigatie knoppen
+        document.getElementById('prev-week').addEventListener('click', () => { currentWeekOffset--; renderWeekPlanner(); });
+        document.getElementById('next-week').addEventListener('click', () => { currentWeekOffset++; renderWeekPlanner(); });
+        document.getElementById('today-btn').addEventListener('click', () => { currentWeekOffset = 0; renderWeekPlanner(); });
+
+        // Checklist logica
         function renderChecklist() {
             const container = document.getElementById('checklist-container');
             container.innerHTML = '';
-            checklistItems.forEach((item, index) => {
+            checklistItems.forEach((item) => {
                 const li = document.createElement('li');
                 li.className = 'flex items-center justify-between group py-1';
                 li.innerHTML = `
@@ -282,16 +396,72 @@
             }
         });
 
-        // Item Modal openen/sluiten
+        // Item toevoegen modal
+        window.openAddModalForDate = function(dateStr) {
+            document.getElementById('item-date').value = dateStr;
+            document.getElementById('item-title').value = '';
+            document.getElementById('item-time').value = '';
+            document.getElementById('item-modal').classList.remove('hidden');
+        };
+
         document.getElementById('open-add-modal').addEventListener('click', () => {
+            document.getElementById('item-date').value = new Date().toISOString().split('T')[0];
             document.getElementById('item-modal').classList.remove('hidden');
         });
-        document.getElementById('item-modal-close').addEventListener('click', () => {
+
+        document.getElementById('item-modal-close').addEventListener('click', () => { document.getElementById('item-modal').classList.add('hidden'); });
+        document.getElementById('item-modal-cancel').addEventListener('click', () => { document.getElementById('item-modal').classList.add('hidden'); });
+
+        document.getElementById('item-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('item-title').value;
+            const date = document.getElementById('item-date').value;
+            const time = document.getElementById('item-time').value;
+
+            plannerItems.push({ id: Date.now(), title, date, time });
             document.getElementById('item-modal').classList.add('hidden');
+            renderWeekPlanner();
         });
-        document.getElementById('item-modal-cancel').addEventListener('click', () => {
-            document.getElementById('item-modal').classList.add('hidden');
+
+        window.removeItem = function(id) {
+            plannerItems = plannerItems.filter(i => i.id !== id);
+            renderWeekPlanner();
+        };
+
+        // Instellingen Modal logica & Profielfoto
+        document.getElementById('btn-settings-open').addEventListener('click', () => {
+            document.getElementById('setting-name-input').value = settings.name;
+            document.getElementById('settings-modal').classList.remove('hidden');
         });
+        document.getElementById('settings-modal-close').addEventListener('click', () => { document.getElementById('settings-modal').classList.add('hidden'); });
+
+        document.getElementById('setting-avatar-input').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    settings.avatarImg = evt.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('settings-modal-save').addEventListener('click', () => {
+            settings.name = document.getElementById('setting-name-input').value || 'Olgenda';
+            applySettingsUI();
+            document.getElementById('settings-modal').classList.add('hidden');
+        });
+
+        function applySettingsUI() {
+            document.getElementById('header-logo-text').innerText = settings.name;
+            const avatarImg = document.getElementById('header-avatar-img');
+            if (settings.avatarImg) {
+                avatarImg.src = settings.avatarImg;
+                avatarImg.classList.remove('hidden');
+            } else {
+                avatarImg.classList.add('hidden');
+            }
+        }
     </script>
 </body>
 </html>
