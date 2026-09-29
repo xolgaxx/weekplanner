@@ -23,7 +23,7 @@
     
     <style>
         :root {
-            --bg-main: #fbf9f5;
+            --bg-main: #f4efe6;
             --card-bg: #ffffff;
             --card-border-color: #eadfc9;
             --text-main: #4a3b2c;
@@ -31,11 +31,11 @@
             --accent-hover: #78614e;
             --header-bg: linear-gradient(135deg, #a39181 0%, #78614e 100%);
             --header-text: #ffffff;
-            --radius-val: 16px;
+            --radius-val: 18px;
             --border-style-val: solid;
             --border-width-val: 1px;
             --font-family-val: 'Quicksand', sans-serif;
-            --shadow-val: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --shadow-val: 0 10px 25px -5px rgb(140 122 107 / 0.1), 0 8px 10px -6px rgb(140 122 107 / 0.1);
             --profile-border-color: #d6ccbc;
         }
 
@@ -44,6 +44,36 @@
             color: var(--text-main);
             font-family: var(--font-family-val);
             transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* GGC Digital Planner Tablet / Binder Container Frame */
+        .digital-binder-frame {
+            background-color: #faf7f2;
+            border: 6px solid #e3d7c8;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px -10px rgba(74, 59, 44, 0.12);
+            position: relative;
+        }
+
+        /* Aesthetic Planner Tabs */
+        .planner-tab {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            background: #e3d7c8;
+            color: #5c4a38;
+            padding: 10px 6px;
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .planner-tab:hover, .planner-tab.active {
+            background: var(--accent-color);
+            color: #ffffff;
+            margin-right: -4px;
         }
 
         .custom-card {
@@ -59,6 +89,8 @@
         .custom-header {
             background: var(--header-bg);
             color: var(--header-text);
+            border-top-left-radius: 22px;
+            border-top-right-radius: 22px;
         }
 
         .custom-btn-primary {
@@ -139,11 +171,11 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col transition-colors duration-300">
+<body class="min-h-screen flex flex-col justify-center items-center p-2 md:p-6 transition-colors duration-300">
 
     <!-- INLOG / REGISTRATIE SCHERM -->
-    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#fbf9f5] backdrop-blur-sm p-4">
-        <div class="max-w-md w-full p-8 bg-white rounded-2xl shadow-xl border border-[#eadfc9]">
+    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#f4efe6] backdrop-blur-sm p-4">
+        <div class="max-w-md w-full p-8 bg-white rounded-3xl shadow-xl border border-[#eadfc9]">
             <div class="text-center mb-6">
                 <div class="inline-block p-3 rounded-2xl bg-[#f7f4ee] text-[#78614e] mb-3">
                     <i class="fa-solid fa-calendar-check text-2xl"></i>
@@ -179,8 +211,9 @@
         </div>
     </div>
 
-    <!-- HOOFDAPPLICATIE -->
-    <div id="app-screen" class="flex-1 flex flex-col hidden">
+    <!-- HOOFDAPPLICATIE IN DIGITAL BINDER CONTAINER -->
+    <div id="app-screen" class="max-w-[1440px] w-full digital-binder-frame flex flex-col hidden overflow-hidden my-auto">
+        
         <!-- COMPACTE APP HEADER -->
         <header id="planner-header" class="custom-header py-3 px-4 md:px-6 shadow-md relative overflow-hidden transition-all duration-300">
             <div class="w-full flex flex-wrap items-center justify-between gap-3 relative z-10">
@@ -233,8 +266,8 @@
             </div>
         </header>
 
-        <!-- MAIN CONTAINER -->
-        <div class="flex-1 max-w-7xl w-full mx-auto px-2 md:px-4 py-6 flex flex-col lg:flex-row gap-6 relative items-start">
+        <!-- MAIN CONTAINER CONTENT -->
+        <div class="flex-1 w-full mx-auto px-3 md:px-6 py-6 flex flex-col lg:flex-row gap-6 relative items-start">
 
             <div id="customizer-overlay" class="fixed inset-0 bg-black/40 z-30 hidden backdrop-blur-xs transition-opacity"></div>
 
@@ -348,8 +381,12 @@
             <!-- HOOFDAGEN LIJST -->
             <main class="flex-1 flex flex-col space-y-5 min-w-0 w-full lg:w-auto">
 
-                <div id="greeting-banner-container" class="px-1">
+                <div id="greeting-banner-container" class="px-1 flex items-center justify-between">
                     <h1 id="main-greeting-heading" class="text-xl md:text-2xl font-extrabold tracking-tight">Goedemorgen! 👋</h1>
+                    <!-- Aantal digitale tabs rechts boven in de binder -->
+                    <div class="hidden sm:flex items-center gap-1">
+                        <span class="text-[10px] font-bold uppercase px-2 py-1 rounded bg-[#e3d7c8] text-[#5c4a38]">✨ Digital Life Planner</span>
+                    </div>
                 </div>
 
                 <div id="planner-grid-container" class="flex flex-col gap-4 transition-all duration-300">
@@ -527,7 +564,7 @@
 
         const DEFAULT_SETTINGS = {
             activePreset: 'beige',
-            bgColor: '#fbf9f5',
+            bgColor: '#f4efe6',
             cardColor: '#ffffff',
             textColor: '#4a3b2c',
             accentColor: '#8c7a6b',
@@ -537,7 +574,7 @@
             userName: '',
             avatarImg: 'https://placehold.co/120x120/8c7a6b/ffffff?text=U',
             avatarShape: 'rounded-full',
-            radius: '16px',
+            radius: '18px',
             borderStyle: 'solid',
             font: 'font-quicksand',
             categories: DEFAULT_CATEGORIES,
@@ -545,11 +582,11 @@
         };
 
         const PRESETS = {
-            beige: { bgColor: '#fbf9f5', cardColor: '#ffffff', textColor: '#4a3b2c', accentColor: '#8c7a6b', headerBg1: '#a39181', headerBg2: '#78614e', profileBorderColor: '#d6ccbc', radius: '16px', borderStyle: 'solid' },
+            beige: { bgColor: '#f4efe6', cardColor: '#ffffff', textColor: '#4a3b2c', accentColor: '#8c7a6b', headerBg1: '#a39181', headerBg2: '#78614e', profileBorderColor: '#d6ccbc', radius: '18px', borderStyle: 'solid' },
             emmy: { bgColor: '#f9f5fb', cardColor: '#ffffff', textColor: '#1a1025', accentColor: '#7e22ce', headerBg1: '#e8d5fc', headerBg2: '#d8b4fe', profileBorderColor: '#e8d5fc', radius: '20px', borderStyle: 'solid' },
-            isabel: { bgColor: '#e2f3ea', cardColor: '#ffffff', textColor: '#0a1d17', accentColor: '#0f9f8c', headerBg1: '#59937d', headerBg2: '#a4e8d2', profileBorderColor: '#59937d', radius: '16px', borderStyle: 'solid' },
+            isabel: { bgColor: '#e2f3ea', cardColor: '#ffffff', textColor: '#0a1d17', accentColor: '#0f9f8c', headerBg1: '#59937d', headerBg2: '#a4e8d2', profileBorderColor: '#59937d', radius: '18px', borderStyle: 'solid' },
             olga: { bgColor: '#fbf5f0', cardColor: '#ffffff', textColor: '#63200b', accentColor: '#f77383', headerBg1: '#f8cde2', headerBg2: '#f58296', profileBorderColor: '#f8cde2', radius: '24px', borderStyle: 'solid' },
-            custom: { bgColor: '#f8fafc', cardColor: '#ffffff', textColor: '#0f172a', accentColor: '#8c7a6b', headerBg1: '#8c7a6b', headerBg2: '#78614e', profileBorderColor: '#ffffff', radius: '16px', borderStyle: 'solid' }
+            custom: { bgColor: '#f8fafc', cardColor: '#ffffff', textColor: '#0f172a', accentColor: '#8c7a6b', headerBg1: '#8c7a6b', headerBg2: '#78614e', profileBorderColor: '#ffffff', radius: '18px', borderStyle: 'solid' }
         };
 
         let state = {
@@ -1378,7 +1415,6 @@
                 }, 800);
             });
 
-            // Profielfoto upload functionaliteit koppelen
             document.getElementById('setting-avatar-input').addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (file) {
@@ -1441,7 +1477,6 @@
                 }
             });
 
-            // JSON Exporteer / Importeer & Reset knoppen koppelen
             document.getElementById('btn-export-json').addEventListener('click', () => {
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ settings: state.settings, items: state.items, widgetData: state.widgetData }));
                 const downloadAnchor = document.createElement('a');
@@ -1528,7 +1563,7 @@
                 const nameInp = document.getElementById('new-cat-name');
                 const catName = nameInp.value.trim();
                 if (catName) {
-                    state.settings.categories.categories.push({ id: 'cat_' + Date.now(), name: catName, color: document.getElementById('new-cat-color').value });
+                    state.settings.categories.push({ id: 'cat_' + Date.now(), name: catName, color: document.getElementById('new-cat-color').value });
                     nameInp.value = '';
                     saveSettingsToFirebase();
                     renderCategoryManager();
@@ -1538,17 +1573,28 @@
 
             document.querySelectorAll('.preset-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const key = btn.dataset.preset;
-                    if (PRESETS[key]) {
-                        state.settings = { ...state.settings, ...PRESETS[key], activePreset: key };
-                        applySettingsUI(); renderPlanner(); saveSettingsToFirebase();
+                    const presetKey = btn.dataset.preset;
+                    if (PRESETS[presetKey]) {
+                        state.settings.activePreset = presetKey;
+                        const p = PRESETS[presetKey];
+                        state.settings.bgColor = p.bgColor;
+                        state.settings.cardColor = p.cardColor;
+                        state.settings.textColor = p.textColor;
+                        state.settings.accentColor = p.accentColor;
+                        state.settings.headerBg1 = p.headerBg1;
+                        state.settings.headerBg2 = p.headerBg2;
+                        state.settings.profileBorderColor = p.profileBorderColor;
+                        state.settings.radius = p.radius;
+                        applySettingsUI();
+                        saveSettingsToFirebase();
                     }
                 });
             });
         }
 
-        window.onload = function() { initEventListeners(); };
+        document.addEventListener('DOMContentLoaded', () => {
+            initEventListeners();
+        });
     </script>
-    <a href="https://github.com/xolgaxx/weekplanner/issues" target="_blank" style="position: fixed; bottom: 20px; right: 20px; background: #5c4a38; color: white; padding: 12px 20px; border-radius: 30px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000; font-family: 'Quicksand', sans-serif;">💬 Geef Feedback</a>
 </body>
 </html>
