@@ -556,7 +556,7 @@
             currentWeekOffset: 0,
             selectedCategoryFilter: 'all',
             items: [],
-            widgetData: {}, // Bevat data per widget ID (bijv. notities, afvinklijsten, gewoontestatus)
+            widgetData: {}, // Bevat data per widget ID (bijv. notities, afvinklijsten, gewoontestatus, verjaardagen)
             settings: { ...DEFAULT_SETTINGS }
         };
 
@@ -986,6 +986,18 @@
                     const daysInMonth = new Date(year, month + 1, 0).getDate();
                     const todayDate = now.getDate();
 
+                    // Verjaardagen ophalen uit widgetData
+                    let bdayData = state.widgetData[w.id];
+                    let birthdays = [];
+                    if (Array.isArray(bdayData)) {
+                        birthdays = bdayData;
+                    } else if (bdayData && Array.isArray(bdayData.birthdays)) {
+                        birthdays = bdayData.birthdays;
+                    }
+
+                    // Filter jarigen van de huidige maand
+                    const currentMonthBirthdays = birthdays.filter(b => parseInt(b.month) === (month + 1));
+
                     let calHtml = `
                         <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
                             <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
@@ -1006,12 +1018,98 @@
 
                     for (let d = 1; d <= daysInMonth; d++) {
                         const isToday = d === todayDate;
-                        calHtml += `<div class="py-1 rounded-lg font-medium ${isToday ? 'text-white font-bold shadow-sm' : 'hover:bg-gray-100 text-gray-700'}" ${isToday ? `style="background-color: var(--accent-color);"` : ''}>${d}</div>`;
+                        const bdays = birthdays.filter(b => parseInt(b.day) === d && parseInt(b.month) === (month + 1));
+                        const isBirthday = bdays.length > 0;
+                        const names = bdays.map(b => escapeHtml(b.name)).join(', ');
+
+                        if (isToday) {
+                            calHtml += `<div class="py-1 rounded-lg font-bold text-white shadow-sm relative cursor-pointer" style="background-color: var(--accent-color);" title="${isBirthday ? 'Vandaag jarig: ' + names : 'Vandaag'}">
+                                ${d} ${isBirthday ? '🎂' : ''}
+                            </div>`;
+                        } else if (isBirthday) {
+                            calHtml += `<div class="py-1 rounded-lg font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-xs relative cursor-pointer hover:bg-amber-200 transition" title="Jarig: ${names}">
+                                ${d} 🎂
+                            </div>`;
+                        } else {
+                            calHtml += `<div class="py-1 rounded-lg font-medium hover:bg-gray-100 text-gray-700">${d}</div>`;
+                        }
                     }
 
                     calHtml += `</div>`;
+
+                    // Sectie voor het beheren en bekijken van verjaardagen
+                    calHtml += `
+                        <div class="pt-3 border-t border-gray-200/60 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-bold text-gray-600 flex items-center gap-1">
+                                    <i class="fa-solid fa-cake-candles text-amber-500"></i> Jarigen deze maand:
+                                </span>
+                            </div>
+                    `;
+
+                    if (currentMonthBirthdays.length === 0) {
+                        calHtml += `<p class="text-[11px] text-gray-400 italic">Geen verjaardagen deze maand.</p>`;
+                    } else {
+                        calHtml += `<div class="space-y-1 max-h-24 overflow-y-auto pr-1">`;
+                        currentMonthBirthdays.forEach((b) => {
+                            const originalIdx = birthdays.indexOf(b);
+                            calHtml += `
+                                <div class="flex items-center justify-between text-xs bg-amber-50/70 px-2 py-1 rounded-lg border border-amber-200/80">
+                                    <span class="font-semibold text-amber-900 truncate">🎂 ${escapeHtml(b.name)} (${b.day} ${monthNames[month]})</span>
+                                    <button type="button" class="del-bday-btn text-gray-400 hover:text-rose-600 ml-1 text-xs p-0.5" data-wid="${w.id}" data-bidx="${originalIdx}"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                            `;
+                        });
+                        calHtml += `</div>`;
+                    }
+
+                    // Formuliertje om snel een verjaardag toe te voegen
+                    calHtml += `
+                            <div class="flex items-center gap-1.5 pt-1">
+                                <input type="text" id="bday_name_${w.id}" placeholder="Naam..." class="flex-1 p-1.5 rounded-lg border border-gray-300 text-xs bg-white min-w-0">
+                                <input type="number" id="bday_day_${w.id}" placeholder="Dag" min="1" max="31" class="w-12 p-1.5 rounded-lg border border-gray-300 text-xs bg-white text-center">
+                                <select id="bday_month_${w.id}" class="w-16 p-1.5 rounded-lg border border-gray-300 text-xs bg-white">
+                                    ${monthNames.map((mName, mIdx) => `<option value="${mIdx + 1}" ${mIdx === month ? 'selected' : ''}>${mName.substring(0, 3)}</option>`).join('')}
+                                </select>
+                                <button type="button" class="add-bday-btn px-2.5 py-1.5 text-white font-bold rounded-lg text-xs transition custom-btn-primary shrink-0" data-wid="${w.id}"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </div>
+                    `;
+
                     card.innerHTML = calHtml;
                     container.appendChild(card);
+
+                    // Event Listeners voor verjaardagen toevoegen en verwijderen
+                    card.querySelectorAll('.del-bday-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const wid = e.currentTarget.dataset.wid;
+                            const bIdx = parseInt(e.currentTarget.dataset.bidx);
+                            birthdays.splice(bIdx, 1);
+                            state.widgetData[wid] = birthdays;
+                            saveWidgetDataToFirebase();
+                            renderRightWidgets();
+                        });
+                    });
+
+                    const addBdayBtn = card.querySelector('.add-bday-btn');
+                    if (addBdayBtn) {
+                        addBdayBtn.addEventListener('click', () => {
+                            const nameInp = card.querySelector(`#bday_name_${w.id}`);
+                            const dayInp = card.querySelector(`#bday_day_${w.id}`);
+                            const monthSel = card.querySelector(`#bday_month_${w.id}`);
+
+                            const nameVal = nameInp.value.trim();
+                            const dayVal = parseInt(dayInp.value);
+                            const monthVal = parseInt(monthSel.value);
+
+                            if (nameVal && dayVal >= 1 && dayVal <= 31 && monthVal >= 1 && monthVal <= 12) {
+                                birthdays.push({ name: nameVal, day: dayVal, month: monthVal });
+                                state.widgetData[w.id] = birthdays;
+                                saveWidgetDataToFirebase();
+                                renderRightWidgets();
+                            }
+                        });
+                    }
                 }
             });
         }
@@ -1328,7 +1426,7 @@
                     dayIndex: parseInt(document.getElementById('item-input-day').value),
                     time: document.getElementById('item-input-time').value,
                     endTime: document.getElementById('item-input-end-time').value,
-                    categoryId: document.getElementById('item-input-[#item-input-category]').value,
+                    categoryId: document.getElementById('item-input-category').value,
                     priority: document.getElementById('item-input-priority').value,
                     sticker: document.getElementById('item-input-sticker').value,
                     notes: document.getElementById('item-input-notes').value.trim(),
