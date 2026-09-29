@@ -386,6 +386,7 @@
                             <input type="text" id="new-widget-title" placeholder="Widget naam..." class="flex-1 p-2 rounded-xl border border-gray-300 text-xs">
                             <select id="new-widget-type" class="p-2 rounded-xl border border-gray-300 text-xs bg-white">
                                 <option value="notepad">Notitieblok</option>
+                                <option value="checklist">Afvinklijst / Checklist</option>
                                 <option value="habits">Gewoontes</option>
                                 <option value="miniCalendar">Kalender</option>
                             </select>
@@ -519,6 +520,7 @@
 
         const DEFAULT_WIDGETS = [
             { id: 'w_notepad_1', type: 'notepad', title: 'Kladblok', enabled: true },
+            { id: 'w_checklist_1', type: 'checklist', title: 'Boodschappen', enabled: true },
             { id: 'w_habits_1', type: 'habits', title: 'Gewoonte-tracker', enabled: true },
             { id: 'w_cal_1', type: 'miniCalendar', title: 'Maandoverzicht', enabled: true }
         ];
@@ -554,7 +556,7 @@
             currentWeekOffset: 0,
             selectedCategoryFilter: 'all',
             items: [],
-            widgetData: {}, // Bevat data per widget ID (bijv. notities, gewoontestatus)
+            widgetData: {}, // Bevat data per widget ID (bijv. notities, afvinklijsten, gewoontestatus)
             settings: { ...DEFAULT_SETTINGS }
         };
 
@@ -815,6 +817,84 @@
                         if (confirm("Weet je zeker dat je dit notitieblok wilt legen?")) {
                             ta.value = ''; state.widgetData[w.id] = ''; saveWidgetDataToFirebase();
                         }
+                    });
+                }
+                else if (w.type === 'checklist') {
+                    const card = document.createElement('div');
+                    card.className = 'custom-card p-4 md:p-5 flex flex-col space-y-4 shadow-md';
+                    const checkList = state.widgetData[w.id] || [
+                        { text: 'Melk', done: false },
+                        { text: 'Brood', done: false }
+                    ];
+
+                    let itemsHtml = '';
+                    checkList.forEach((item, idx) => {
+                        itemsHtml += `
+                            <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg hover:bg-gray-50 transition">
+                                <label class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer">
+                                    <input type="checkbox" class="toggle-checklist-item rounded accent-purple-600 cursor-pointer shrink-0" data-wid="${w.id}" data-idx="${idx}" ${item.done ? 'checked' : ''}>
+                                    <span class="text-xs font-medium text-gray-700 truncate ${item.done ? 'line-through text-gray-400' : ''}">${escapeHtml(item.text)}</span>
+                                </label>
+                                <button type="button" class="del-checklist-item text-gray-400 hover:text-rose-600 text-xs p-1" data-wid="${w.id}" data-idx="${idx}"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                        `;
+                    });
+
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
+                            <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
+                                <i class="fa-solid fa-list-check" style="color: var(--accent-color);"></i>
+                                <span>${escapeHtml(w.title)}</span>
+                            </h3>
+                            <span class="text-[11px] text-gray-400 font-medium">Afvinklijst</span>
+                        </div>
+                        <div class="space-y-1 max-h-48 overflow-y-auto pr-1">
+                            ${itemsHtml || '<p class="text-xs text-gray-400 italic py-1">Nog geen items op de lijst.</p>'}
+                        </div>
+                        <div class="flex items-center gap-2 pt-2 border-t border-gray-200/60">
+                            <input type="text" id="new_cl_item_${w.id}" placeholder="Nieuw item toevoegen..." class="flex-1 p-2 rounded-xl border border-gray-300 text-xs bg-white">
+                            <button type="button" class="add-cl-item-btn px-3 py-2 text-white font-bold rounded-xl text-xs transition custom-btn-primary" data-wid="${w.id}"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+
+                    card.querySelectorAll('.toggle-checklist-item').forEach(cb => {
+                        cb.addEventListener('change', (e) => {
+                            const wid = e.currentTarget.dataset.wid;
+                            const idx = parseInt(e.currentTarget.dataset.idx);
+                            if (!state.widgetData[wid]) state.widgetData[wid] = [...checkList];
+                            state.widgetData[wid][idx].done = e.currentTarget.checked;
+                            saveWidgetDataToFirebase();
+                            renderRightWidgets();
+                        });
+                    });
+
+                    card.querySelectorAll('.del-checklist-item').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const wid = e.currentTarget.dataset.wid;
+                            const idx = parseInt(e.currentTarget.dataset.idx);
+                            state.widgetData[wid].splice(idx, 1);
+                            saveWidgetDataToFirebase();
+                            renderRightWidgets();
+                        });
+                    });
+
+                    const addBtn = card.querySelector('.add-cl-item-btn');
+                    const addInput = card.querySelector(`#new_cl_item_${w.id}`);
+                    
+                    const addItemFunc = () => {
+                        const val = addInput.value.trim();
+                        if (val) {
+                            if (!state.widgetData[w.id]) state.widgetData[w.id] = [...checkList];
+                            state.widgetData[w.id].push({ text: val, done: false });
+                            saveWidgetDataToFirebase();
+                            renderRightWidgets();
+                        }
+                    };
+
+                    addBtn.addEventListener('click', addItemFunc);
+                    addInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') addItemFunc();
                     });
                 }
                 else if (w.type === 'habits') {
@@ -1248,7 +1328,7 @@
                     dayIndex: parseInt(document.getElementById('item-input-day').value),
                     time: document.getElementById('item-input-time').value,
                     endTime: document.getElementById('item-input-end-time').value,
-                    categoryId: document.getElementById('item-input-category').value,
+                    categoryId: document.getElementById('item-input-[#item-input-category]').value,
                     priority: document.getElementById('item-input-priority').value,
                     sticker: document.getElementById('item-input-sticker').value,
                     notes: document.getElementById('item-input-notes').value.trim(),
