@@ -673,6 +673,11 @@
             if (!container) return;
             container.innerHTML = '';
 
+            // Zorg dat widgets altijd aanwezig zijn in de instellingen als ze ontbreken
+            if (!state.settings.widgets || state.settings.widgets.length === 0) {
+                state.settings.widgets = [...DEFAULT_WIDGETS];
+            }
+
             state.settings.widgets.forEach(w => {
                 if (!w.enabled) return;
 
@@ -878,8 +883,7 @@
                     const daysInMonth = new Date(year, month + 1, 0).getDate();
                     const todayDate = now.getDate();
 
-                    // Verjaardagen opslag in widgetData
-                    const bdays = state.widgetData[w.id] || {}; // key: 'YYYY-MM-DD' of 'MM-DD', value: string naam
+                    const bdays = state.widgetData[w.id] || {};
 
                     let calHtml = `
                         <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
@@ -917,7 +921,6 @@
 
                     calHtml += `</div>`;
 
-                    // Toon eventuele verjaardagen van deze maand onderaan
                     const monthBdays = Object.entries(bdays).filter(([k]) => k.startsWith(String(month + 1).padStart(2, '0')));
                     if (monthBdays.length > 0) {
                         calHtml += `<div class="pt-2 border-t border-gray-100 text-[11px] text-gray-500 space-y-1">
