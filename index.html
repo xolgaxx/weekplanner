@@ -35,106 +35,263 @@
     <!-- FontAwesome voor iconen -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
         body {
             background-color: #fbf9f5;
             color: #5c4a38;
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
         }
         .custom-card {
             background: #ffffff;
             border: 1px solid #e6ded0;
             border-radius: 1rem;
             box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
+        }
+        .custom-card:hover {
+            box-shadow: 0 4px 20px -2px rgba(140, 122, 107, 0.1);
+        }
+        /* Ronde bolletjes afvinkknoppen */
+        .checkbox-circle {
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #b8a691;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .checkbox-circle.checked {
+            background-color: #8c7a6b;
+            border-color: #8c7a6b;
+            color: white;
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- Header -->
-    <header class="w-full bg-white border-b border-beige-200 py-4 px-6 mb-6 shadow-sm">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <h1 class="text-2xl font-bold tracking-tight text-beige-700">Olgenda</h1>
-                <span class="text-xs bg-beige-100 text-beige-600 px-2.5 py-1 rounded-full font-medium">Digital Life Planner</span>
+    <!-- Auth Scherm (Login / Register) -->
+    <div id="auth-screen" class="fixed inset-0 bg-beige-50 z-50 flex items-center justify-center p-4">
+        <div class="custom-card bg-white p-8 max-w-md w-full">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-bold tracking-tight text-beige-700 mb-2">Olgenda</h1>
+                <p class="text-beige-500 text-sm">Jouw minimalistische digitale levensplanner</p>
             </div>
-            <div id="user-info" class="flex items-center space-x-4">
-                <span id="user-email" class="text-sm text-beige-600 font-medium"></span>
-                <button id="logout-btn" class="hidden text-xs bg-beige-100 hover:bg-beige-200 text-beige-700 px-3 py-1.5 rounded-lg transition-colors font-medium">Uitloggen</button>
-            </div>
+            <div id="auth-error" class="hidden mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg"></div>
+            <form id="auth-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-beige-500 mb-1">E-mailadres</label>
+                    <input type="email" id="auth-email" required class="w-full px-4 py-2.5 rounded-xl border border-beige-200 focus:outline-none focus:ring-2 focus:ring-beige-400 text-sm bg-beige-50/50">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-beige-500 mb-1">Wachtwoord</label>
+                    <input type="password" id="auth-password" required class="w-full px-4 py-2.5 rounded-xl border border-beige-200 focus:outline-none focus:ring-2 focus:ring-beige-400 text-sm bg-beige-50/50">
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                    <button type="button" id="btn-forgot-password" class="text-beige-500 hover:underline">Wachtwoord vergeten?</button>
+                    <button type="button" id="auth-toggle-mode" class="text-beige-700 font-semibold hover:underline">Nog geen account? Registreer</button>
+                </div>
+                <button type="submit" id="auth-submit-btn" class="w-full py-3 bg-beige-700 text-white rounded-xl font-medium hover:bg-beige-600 transition shadow-sm text-sm">Inloggen</button>
+            </form>
         </div>
-    </header>
+    </div>
 
-    <!-- Main Content Grid (Losse containers in plaats van één enkel kader) -->
-    <main class="max-w-7xl mx-auto w-full px-4 flex-grow grid grid-cols-1 lg:grid-cols-4 gap-6 pb-12">
-        
-        <!-- Linkerkant / Weekplanner (3 kolommen breed) -->
-        <section class="lg:col-span-3 space-y-6">
-            <!-- Week Navigatie & Acties -->
-            <div class="custom-card p-4 flex flex-wrap justify-between items-center gap-4">
-                <div class="flex items-center space-x-2">
-                    <button id="prev-week" class="p-2 rounded-lg hover:bg-beige-100 text-beige-600 transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
-                    <span id="current-week-label" class="font-semibold text-lg text-beige-700">Week --</span>
-                    <button id="next-week" class="p-2 rounded-lg hover:bg-beige-100 text-beige-600 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
-                    <button id="today-btn" class="text-xs bg-beige-100 hover:bg-beige-200 text-beige-700 px-3 py-1.5 rounded-lg transition-colors font-medium ml-2">Vandaag</button>
+    <!-- Hoofdapplicatie -->
+    <div id="app-container" class="flex-1 flex flex-col hidden">
+        <!-- Header -->
+        <header class="w-full bg-white border-b border-beige-200 py-4 px-6 mb-6 shadow-sm sticky top-0 z-30">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <h1 class="text-2xl font-bold tracking-tight text-beige-700">Olgenda</h1>
+                    <span class="text-xs bg-beige-100 text-beige-600 px-2.5 py-1 rounded-full font-medium">Digital Life Planner</span>
                 </div>
-                <button id="open-add-modal" class="bg-beige-700 hover:bg-beige-600 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-all flex items-center space-x-2">
-                    <i class="fa-solid fa-plus"></i>
-                    <span>Nieuw Item Inplannen</span>
-                </button>
-            </div>
-
-            <!-- Dagen Raster -->
-            <div id="week-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Wordt dynamisch gevuld met dagen (Maandag t/m Zondag) -->
-            </div>
-        </section>
-
-        <!-- Rechterkolom / Widgets (1 kolom breed) -->
-        <aside class="space-y-6">
-            <!-- Widgets Beheer & Categorieën -->
-            <div class="custom-card p-5">
-                <h3 class="font-semibold text-beige-700 mb-3 flex items-center space-x-2">
-                    <i class="fa-solid fa-sliders text-beige-500"></i>
-                    <span>Widgets Beheer</span>
-                </h3>
-                <p class="text-xs text-beige-500 mb-4">Kies welke widgets je wilt tonen in je overzicht.</p>
-                <div id="widget-toggles" class="space-y-2 text-sm">
-                    <!-- Widgets checkboxes -->
+                <div class="flex items-center space-x-4">
+                    <button id="btn-settings-open" class="text-xs bg-beige-100 hover:bg-beige-200 text-beige-700 px-3.5 py-2 rounded-xl transition-colors font-medium flex items-center space-x-1.5">
+                        <i class="fa-solid fa-gear"></i>
+                        <span>Instellingen</span>
+                    </button>
+                    <button id="logout-btn" class="text-xs bg-beige-100 hover:bg-red-50 text-beige-700 hover:text-red-600 px-3 py-2 rounded-xl transition-colors font-medium">Uitloggen</button>
                 </div>
             </div>
+        </header>
 
-            <!-- Notitieblok Widget -->
-            <div id="widget-notepad" class="custom-card p-5">
-                <h3 class="font-semibold text-beige-700 mb-3 flex items-center space-x-2">
-                    <i class="fa-solid fa-note-sticky text-beige-500"></i>
-                    <span>Notitieblok</span>
-                </h3>
-                <textarea id="notepad-input" rows="4" class="w-full p-3 text-sm border border-beige-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-beige-400 bg-beige-50 resize-none" placeholder="Schrijf hier je snelle notities..."></textarea>
-            </div>
-
-            <!-- Afvinklijst / Boodschappen Widget -->
-            <div id="widget-checklist" class="custom-card p-5">
-                <h3 class="font-semibold text-beige-700 mb-3 flex items-center space-x-2">
-                    <i class="fa-solid fa-list-check text-beige-500"></i>
-                    <span>Afvinklijst</span>
-                </h3>
-                <div class="flex space-x-2 mb-3">
-                    <input type="text" id="checklist-item-input" placeholder="Nieuw item..." class="flex-grow px-3 py-1.5 text-sm border border-beige-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-beige-400 bg-beige-50">
-                    <button id="add-checklist-btn" class="bg-beige-600 hover:bg-beige-700 text-white px-3 py-1.5 rounded-lg text-sm transition-colors"><i class="fa-solid fa-plus"></i></button>
+        <!-- Main Content Grid (Elke sectie in eigen losse container) -->
+        <main class="max-w-7xl mx-auto w-full px-4 flex-grow grid grid-cols-1 lg:grid-cols-4 gap-6 pb-12">
+            
+            <!-- Linkerkant / Weekplanner (3 kolommen breed) -->
+            <section class="lg:col-span-3 space-y-6">
+                <!-- Week Navigatie & Acties -->
+                <div class="custom-card p-4 flex flex-wrap justify-between items-center gap-4">
+                    <div class="flex items-center space-x-2">
+                        <button id="prev-week" class="p-2 rounded-lg hover:bg-beige-100 text-beige-600 transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
+                        <span id="current-week-label" class="font-semibold text-lg text-beige-700">Week --</span>
+                        <button id="next-week" class="p-2 rounded-lg hover:bg-beige-100 text-beige-600 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
+                        <button id="today-btn" class="text-xs bg-beige-100 hover:bg-beige-200 text-beige-700 px-3 py-1.5 rounded-lg transition-colors font-medium ml-2">Vandaag</button>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <select id="category-filter" class="px-3 py-1.5 text-xs rounded-xl border border-beige-200 bg-beige-50 text-beige-700 focus:outline-none">
+                            <option value="">Alle categorieën</option>
+                        </select>
+                        <button id="open-add-modal" class="bg-beige-700 hover:bg-beige-600 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-all flex items-center space-x-2">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Nieuw Item Inplannen</span>
+                        </button>
+                    </div>
                 </div>
-                <ul id="checklist-container" class="space-y-2 text-sm">
-                    <!-- Items met ronde bolletjes -->
-                </ul>
+
+                <!-- Dagen Raster (Dynamisch geladen) -->
+                <div id="week-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Wordt dynamisch gevuld met dagen (Maandag t/m Zondag) -->
+                </div>
+            </section>
+
+            <!-- Rechterkolom / Widgets (1 kolom breed) -->
+            <aside class="space-y-6">
+                <!-- Notitieblok Widget -->
+                <div id="widget-notepad" class="custom-card p-5">
+                    <h3 class="font-semibold text-beige-700 mb-3 flex items-center space-x-2">
+                        <i class="fa-solid fa-note-sticky text-beige-500"></i>
+                        <span>Notitieblok</span>
+                    </h3>
+                    <textarea id="notepad-input" rows="4" class="w-full p-3 text-sm border border-beige-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-beige-400 bg-beige-50/50 resize-none text-beige-700" placeholder="Schrijf hier je snelle notities..."></textarea>
+                </div>
+
+                <!-- Afvinklijst / Boodschappen Widget met Ronde Bolletjes -->
+                <div id="widget-checklist" class="custom-card p-5">
+                    <h3 class="font-semibold text-beige-700 mb-3 flex items-center space-x-2">
+                        <i class="fa-solid fa-list-check text-beige-500"></i>
+                        <span>Boodschappenlijst</span>
+                    </h3>
+                    <div class="flex space-x-2 mb-3">
+                        <input type="text" id="checklist-item-input" placeholder="Nieuw item..." class="flex-grow px-3 py-1.5 text-sm border border-beige-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-beige-400 bg-beige-50/50">
+                        <button id="add-checklist-btn" class="bg-beige-600 hover:bg-beige-700 text-white px-3.5 py-1.5 rounded-xl text-sm transition-colors"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <ul id="checklist-container" class="space-y-2.5 text-sm">
+                        <!-- Wordt dynamisch gevuld -->
+                    </ul>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Item Modal (Inplannen met 5-minuten stappen) -->
+    <div id="item-modal" class="fixed inset-0 bg-black/30 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="custom-card bg-white max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-beige-100 pb-3">
+                <h3 id="item-modal-title" class="font-bold text-beige-700 text-lg">Nieuw Item Inplannen</h3>
+                <button id="item-modal-close" class="text-beige-400 hover:text-beige-700 font-bold">✕</button>
             </div>
-        </aside>
-    </main>
+            <form id="item-form" class="space-y-4 text-sm">
+                <input type="hidden" id="item-id">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-beige-500 mb-1">Onderwerp / Taak</label>
+                    <input type="text" id="item-title" required class="w-full px-3 py-2 rounded-xl border border-beige-200 focus:outline-none focus:ring-2 focus:ring-beige-400 bg-beige-50/50">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-beige-500 mb-1">Datum</label>
+                        <input type="date" id="item-date" required class="w-full px-3 py-2 rounded-xl border border-beige-200 bg-beige-50/50">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-beige-500 mb-1">Starttijd (per 5 min)</label>
+                        <input type="time" id="item-time" step="300" class="w-full px-3 py-2 rounded-xl border border-beige-200 bg-beige-50/50">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" id="item-modal-cancel" class="px-4 py-2 text-beige-600 hover:bg-beige-100 rounded-xl text-xs font-medium">Annuleren</button>
+                    <button type="submit" class="px-4 py-2 bg-beige-700 text-white rounded-xl text-xs font-medium hover:bg-beige-600">Opslaan</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-    <!-- Tijdselectie voorbeeldspecificatie (tijdstappen van 5 minuten in modals of formulieren) -->
-    <!-- Voorbeeld tijdinput attribuut: type="time" step="300" -->
+    <!-- Basis JavaScript Logica -->
+    <script>
+        // Simuleer direct inloggen voor preview & test
+        document.getElementById('auth-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            initApp();
+        });
 
-    <footer class="text-center py-6 text-xs text-beige-400 border-t border-beige-200 mt-auto">
-        &copy; 2026 Olgenda. Gemaakt met een schone, minimalistische GGC-stijl.
-    </footer>
+        document.getElementById('auth-toggle-mode').addEventListener('click', () => {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            initApp();
+        });
 
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            document.getElementById('app-container').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+        });
+
+        // Mock app initialisatie
+        function initApp() {
+            document.getElementById('current-week-label').innerText = 'Week 14 (Voorbeeld)';
+            renderChecklist();
+        }
+
+        // Voorbeeld checklist met ronde bolletjes
+        let checklistItems = [
+            { id: 1, text: 'Havermelk en bananen halen', done: false },
+            { id: 2, text: 'Weekboodschappen bio-markt', done: true }
+        ];
+
+        function renderChecklist() {
+            const container = document.getElementById('checklist-container');
+            container.innerHTML = '';
+            checklistItems.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center justify-between group py-1';
+                li.innerHTML = `
+                    <div class="flex items-center space-x-3 cursor-pointer" onclick="toggleChecklistItem(${item.id})">
+                        <div class="checkbox-circle ${item.done ? 'checked' : ''}">
+                            ${item.done ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
+                        </div>
+                        <span class="text-sm ${item.done ? 'line-through text-beige-400' : 'text-beige-700'}">${item.text}</span>
+                    </div>
+                    <button onclick="removeChecklistItem(${item.id})" class="text-beige-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                `;
+                container.appendChild(li);
+            });
+        }
+
+        window.toggleChecklistItem = function(id) {
+            const item = checklistItems.find(i => i.id === id);
+            if (item) {
+                item.done = !item.done;
+                if (item.done) confetti({ particleCount: 30, spread: 60, origin: { y: 0.8 } });
+                renderChecklist();
+            }
+        };
+
+        window.removeChecklistItem = function(id) {
+            checklistItems = checklistItems.filter(i => i.id !== id);
+            renderChecklist();
+        };
+
+        document.getElementById('add-checklist-btn').addEventListener('click', () => {
+            const input = document.getElementById('checklist-item-input');
+            if (input.value.trim()) {
+                checklistItems.push({ id: Date.now(), text: input.value.trim(), done: false });
+                input.value = '';
+                renderChecklist();
+            }
+        });
+
+        // Item Modal openen/sluiten
+        document.getElementById('open-add-modal').addEventListener('click', () => {
+            document.getElementById('item-modal').classList.remove('hidden');
+        });
+        document.getElementById('item-modal-close').addEventListener('click', () => {
+            document.getElementById('item-modal').classList.add('hidden');
+        });
+        document.getElementById('item-modal-cancel').addEventListener('click', () => {
+            document.getElementById('item-modal').classList.add('hidden');
+        });
+    </script>
 </body>
 </html>
