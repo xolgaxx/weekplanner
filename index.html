@@ -356,45 +356,9 @@
                 </div>
             </main>
 
-            <!-- RECHTER SECTIE: WIDGETS + WIDGET-INSTELLINGENMENU ONDERAAN -->
+            <!-- RECHTER SECTIE: DE 4 VASTE WIDGETS -->
             <aside id="right-widgets-container" class="w-full lg:w-80 shrink-0 flex flex-col space-y-4">
                 <div id="widgets-render-area" class="flex flex-col space-y-4"></div>
-
-                <hr class="border-gray-200/60 my-1">
-
-                <div class="custom-card p-3 flex items-center justify-between shadow-sm">
-                    <span class="text-xs font-bold uppercase tracking-wider text-gray-500 flex items-center gap-2">
-                        <i class="fa-solid fa-puzzle-piece" style="color: var(--accent-color);"></i>
-                        <span>Widgets Beheer</span>
-                    </span>
-                    <button id="btn-toggle-widget-settings" class="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition text-xs" title="Widgets aanpassen">
-                        <i class="fa-solid fa-gear"></i>
-                    </button>
-                </div>
-
-                <div id="widget-settings-dropdown" class="custom-card p-4 space-y-3 shadow-md hidden border border-purple-200">
-                    <div class="flex items-center justify-between border-b pb-2 border-gray-200/50">
-                        <span class="font-bold text-xs">Kies &amp; rangschik widgets</span>
-                        <button id="btn-close-widget-settings" class="text-gray-400 hover:text-gray-600 text-xs"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
-                    <p class="text-[11px] text-gray-400">Vink aan welke widgets je wilt tonen, wijzig titels of voeg nieuwe toe:</p>
-                    <div id="widget-manager-list" class="space-y-2"></div>
-                    
-                    <div class="pt-3 border-t border-gray-200/50 space-y-2">
-                        <span class="font-bold text-xs block">Nieuwe Widget Toevoegen</span>
-                        <div class="flex items-center gap-2">
-                            <input type="text" id="new-widget-title" placeholder="Widget naam..." class="flex-1 p-2 rounded-xl border border-gray-300 text-xs">
-                            <select id="new-widget-type" class="p-2 rounded-xl border border-gray-300 text-xs bg-white">
-                                <option value="notepad">Notitieblok</option>
-                                <option value="habits">Gewoontes</option>
-                                <option value="miniCalendar">Kalender</option>
-                            </select>
-                            <button id="btn-add-widget" class="px-3 py-2 text-white font-bold rounded-xl text-xs transition custom-btn-primary">
-                                <i class="fa-solid fa-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </aside>
 
         </div>
@@ -517,10 +481,12 @@
             { id: 'cat_social', name: 'Sociaal', color: '#8b5cf6' }
         ];
 
+        // De 4 vaste widgets zoals gevraagd
         const DEFAULT_WIDGETS = [
-            { id: 'w_notepad_1', type: 'notepad', title: 'Kladblok', enabled: true },
-            { id: 'w_habits_1', type: 'habits', title: 'Gewoonte-tracker', enabled: true },
-            { id: 'w_cal_1', type: 'miniCalendar', title: 'Maandoverzicht', enabled: true }
+            { id: 'w_mini_calendar', type: 'miniCalendar', title: 'mini-kalender', enabled: true },
+            { id: 'w_habit_tracker', type: 'habits', title: 'habit tracker', enabled: true },
+            { id: 'w_checklist', type: 'checklist', title: 'checklist', enabled: true },
+            { id: 'w_braindump', type: 'notepad', title: 'braindump', enabled: true }
         ];
 
         const DEFAULT_SETTINGS = {
@@ -554,7 +520,7 @@
             currentWeekOffset: 0,
             selectedCategoryFilter: 'all',
             items: [],
-            widgetData: {}, // Bevat data per widget ID (bijv. notities, gewoontestatus)
+            widgetData: {}, 
             settings: { ...DEFAULT_SETTINGS }
         };
 
@@ -608,7 +574,6 @@
                 await loadStateForUser(user.uid);
                 applySettingsUI();
                 renderCategoryManager();
-                renderWidgetManager();
                 renderRightWidgets();
                 renderPlanner();
                 updateLogoTheme();
@@ -702,75 +667,7 @@
             return trimmedName ? `${greeting} ${trimmedName}!` : `${greeting}!`;
         }
 
-        function renderWidgetManager() {
-            const container = document.getElementById('widget-manager-list');
-            if (!container) return;
-            container.innerHTML = '';
-
-            state.settings.widgets.forEach((w, idx) => {
-                const item = document.createElement('div');
-                item.className = 'flex items-center justify-between bg-gray-50 p-2 rounded-xl border border-gray-200 text-xs gap-2';
-                item.innerHTML = `
-                    <div class="flex items-center gap-2 flex-1 min-w-0">
-                        <input type="checkbox" class="widget-toggle-cb rounded accent-purple-600 cursor-pointer shrink-0" data-index="${idx}" ${w.enabled ? 'checked' : ''}>
-                        <input type="text" class="widget-title-input flex-1 p-1 bg-white border border-gray-200 rounded font-semibold text-xs" data-index="${idx}" value="${escapeHtml(w.title)}">
-                    </div>
-                    <div class="flex items-center gap-1 shrink-0">
-                        <button type="button" class="widget-move-up p-1 text-gray-400 hover:text-gray-700 ${idx === 0 ? 'opacity-30 pointer-events-none' : ''}" data-index="${idx}"><i class="fa-solid fa-chevron-up"></i></button>
-                        <button type="button" class="widget-move-down p-1 text-gray-400 hover:text-gray-700 ${idx === state.settings.widgets.length - 1 ? 'opacity-30 pointer-events-none' : ''}" data-index="${idx}"><i class="fa-solid fa-chevron-down"></i></button>
-                        <button type="button" class="widget-delete p-1 text-gray-400 hover:text-rose-600" data-index="${idx}"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-
-            container.querySelectorAll('.widget-toggle-cb').forEach(cb => {
-                cb.addEventListener('change', (e) => {
-                    state.settings.widgets[e.target.dataset.index].enabled = e.target.checked;
-                    saveSettingsToFirebase(); renderRightWidgets();
-                });
-            });
-
-            container.querySelectorAll('.widget-title-input').forEach(inp => {
-                inp.addEventListener('change', (e) => {
-                    state.settings.widgets[e.target.dataset.index].title = e.target.value.trim() || 'Widget';
-                    saveSettingsToFirebase(); renderRightWidgets();
-                });
-            });
-
-            container.querySelectorAll('.widget-move-up').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const idx = parseInt(e.currentTarget.dataset.index);
-                    if (idx > 0) {
-                        const temp = state.settings.widgets[idx];
-                        state.settings.widgets[idx] = state.settings.widgets[idx - 1];
-                        state.settings.widgets[idx - 1] = temp;
-                        saveSettingsToFirebase(); renderWidgetManager(); renderRightWidgets();
-                    }
-                });
-            });
-
-            container.querySelectorAll('.widget-move-down').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const idx = parseInt(e.currentTarget.dataset.index);
-                    if (idx < state.settings.widgets.length - 1) {
-                        const temp = state.settings.widgets[idx];
-                        state.settings.widgets[idx] = state.settings.widgets[idx + 1];
-                        state.settings.widgets[idx + 1] = temp;
-                        saveSettingsToFirebase(); renderWidgetManager(); renderRightWidgets();
-                    }
-                });
-            });
-
-            container.querySelectorAll('.widget-delete').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const idx = parseInt(e.currentTarget.dataset.index);
-                    state.settings.widgets.splice(idx, 1);
-                    saveSettingsToFirebase(); renderWidgetManager(); renderRightWidgets();
-                });
-            });
-        }
-
+        // Render de 4 vaste widgets in de rechterzijbalk
         function renderRightWidgets() {
             const container = document.getElementById('widgets-render-area');
             if (!container) return;
@@ -779,20 +676,20 @@
             state.settings.widgets.forEach(w => {
                 if (!w.enabled) return;
 
+                // 1. BRAINDUMP (Notitieblokje)
                 if (w.type === 'notepad') {
                     const card = document.createElement('div');
                     card.className = 'custom-card p-4 md:p-5 flex flex-col space-y-4 shadow-md';
                     const content = state.widgetData[w.id] || '';
                     card.innerHTML = `
                         <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
-                            <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
-                                <i class="fa-solid fa-note-sticky" style="color: var(--accent-color);"></i>
+                            <h3 class="font-bold text-base flex items-center gap-2 capitalize" style="color: var(--accent-color);">
+                                <i class="fa-solid fa-brain" style="color: var(--accent-color);"></i>
                                 <span>${escapeHtml(w.title)}</span>
                             </h3>
-                            <span class="text-[11px] text-gray-400 font-medium">Notitieblok</span>
                         </div>
                         <div class="flex-1 flex flex-col space-y-2">
-                            <textarea id="np_${w.id}" rows="5" placeholder="Typ hier je notities..." class="w-full p-3 text-xs bg-amber-50/30 border border-amber-200/60 rounded-xl focus:ring-2 focus:bg-white outline-none resize-y transition leading-relaxed shadow-inner" style="--tw-ring-color: var(--accent-color);">${escapeHtml(content)}</textarea>
+                            <textarea id="np_${w.id}" rows="5" placeholder="Gedachten, losse ideetjes..." class="w-full p-3 text-xs bg-amber-50/30 border border-amber-200/60 rounded-xl focus:ring-2 focus:bg-white outline-none resize-y transition leading-relaxed shadow-inner" style="--tw-ring-color: var(--accent-color);">${escapeHtml(content)}</textarea>
                             <div class="flex items-center justify-between text-[11px] text-gray-400 px-1">
                                 <span id="status_${w.id}">Opgeslagen</span>
                                 <button type="button" id="clear_${w.id}" class="hover:text-rose-600 transition font-medium">Wis</button>
@@ -812,26 +709,26 @@
                         }, 800);
                     });
                     card.querySelector(`#clear_${w.id}`).addEventListener('click', () => {
-                        if (confirm("Weet je zeker dat je dit notitieblok wilt legen?")) {
+                        if (confirm("Weet je zeker dat je je braindump wilt legen?")) {
                             ta.value = ''; state.widgetData[w.id] = ''; saveWidgetDataToFirebase();
                         }
                     });
                 }
+                // 2. HABIT TRACKER
                 else if (w.type === 'habits') {
                     const card = document.createElement('div');
                     card.className = 'custom-card p-4 md:p-5 flex flex-col space-y-4 shadow-md';
                     const habitList = state.widgetData[w.id] || [
                         { text: 'Water drinken (2L)', days: [false,false,false,false,false,false,false] },
-                        { text: 'Wandelen / Sporten', days: [false,false,false,false,false,false,false] }
+                        { text: 'Wandelen', days: [false,false,false,false,false,false,false] }
                     ];
 
                     let habitsHtml = `
                         <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
-                            <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
+                            <h3 class="font-bold text-base flex items-center gap-2 capitalize" style="color: var(--accent-color);">
                                 <i class="fa-solid fa-square-check" style="color: var(--accent-color);"></i>
                                 <span>${escapeHtml(w.title)}</span>
                             </h3>
-                            <span class="text-[11px] text-gray-400 font-medium">Gewoontes</span>
                         </div>
                         <div class="space-y-3">
                     `;
@@ -892,6 +789,81 @@
                         }
                     });
                 }
+                // 3. CHECKLIST (Lijst met bolletjes om af te vinken)
+                else if (w.type === 'checklist') {
+                    const card = document.createElement('div');
+                    card.className = 'custom-card p-4 md:p-5 flex flex-col space-y-3 shadow-md';
+                    const checkItems = state.widgetData[w.id] || [
+                        { text: 'Boodschappen doen', done: false },
+                        { text: 'Planten water geven', done: true }
+                    ];
+
+                    let checkHtml = `
+                        <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
+                            <h3 class="font-bold text-base flex items-center gap-2 capitalize" style="color: var(--accent-color);">
+                                <i class="fa-solid fa-list-check" style="color: var(--accent-color);"></i>
+                                <span>${escapeHtml(w.title)}</span>
+                            </h3>
+                        </div>
+                        <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    `;
+
+                    checkItems.forEach((cItem, cIdx) => {
+                        checkHtml += `
+                            <div class="flex items-center justify-between bg-gray-50 px-2.5 py-2 rounded-xl border border-gray-200/60 text-xs gap-2">
+                                <div class="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer toggle-chk" data-wid="${w.id}" data-cidx="${cIdx}">
+                                    <div class="w-4 h-4 rounded-full border border-gray-400 flex items-center justify-center shrink-0 ${cItem.done ? 'bg-purple-600 border-purple-600 text-white' : 'bg-white'}">
+                                        ${cItem.done ? '<i class="fa-solid fa-check text-[9px]"></i>' : ''}
+                                    </div>
+                                    <span class="truncate ${cItem.done ? 'line-through text-gray-400 font-normal' : 'font-semibold text-gray-700'}">${escapeHtml(cItem.text)}</span>
+                                </div>
+                                <button class="del-chk text-gray-400 hover:text-rose-600 shrink-0" data-wid="${w.id}" data-cidx="${cIdx}"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                        `;
+                    });
+
+                    checkHtml += `
+                        </div>
+                        <div class="flex items-center gap-2 pt-1">
+                            <input type="text" id="new_chk_${w.id}" placeholder="Nieuw punt..." class="flex-1 p-2 rounded-xl border border-gray-300 text-xs bg-white">
+                            <button type="button" class="add-chk-btn px-3 py-2 text-white font-bold rounded-xl text-xs transition custom-btn-primary" data-wid="${w.id}"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    `;
+                    card.innerHTML = checkHtml;
+                    container.appendChild(card);
+
+                    card.querySelectorAll('.toggle-chk').forEach(el => {
+                        el.addEventListener('click', (e) => {
+                            const wid = e.currentTarget.dataset.wid;
+                            const cIdx = parseInt(e.currentTarget.dataset.cidx);
+                            if (!state.widgetData[wid]) state.widgetData[wid] = checkItems;
+                            state.widgetData[wid][cIdx].done = !state.widgetData[wid][cIdx].done;
+                            if (state.widgetData[wid][cIdx].done && typeof confetti === 'function') confetti({ particleCount: 15, spread: 30 });
+                            saveWidgetDataToFirebase(); renderRightWidgets();
+                        });
+                    });
+
+                    card.querySelectorAll('.del-chk').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const wid = e.currentTarget.dataset.wid;
+                            const cIdx = parseInt(e.currentTarget.dataset.cidx);
+                            state.widgetData[wid].splice(cIdx, 1);
+                            saveWidgetDataToFirebase(); renderRightWidgets();
+                        });
+                    });
+
+                    card.querySelector('.add-chk-btn').addEventListener('click', (e) => {
+                        const wid = e.currentTarget.dataset.wid;
+                        const input = card.querySelector(`#new_chk_${wid}`);
+                        const val = input.value.trim();
+                        if (val) {
+                            if (!state.widgetData[wid]) state.widgetData[wid] = [...checkItems];
+                            state.widgetData[wid].push({ text: val, done: false });
+                            saveWidgetDataToFirebase(); renderRightWidgets();
+                        }
+                    });
+                }
+                // 4. MINI-KALENDER (Met verjaardagen optie)
                 else if (w.type === 'miniCalendar') {
                     const card = document.createElement('div');
                     card.className = 'custom-card p-4 md:p-5 flex flex-col space-y-3 shadow-md';
@@ -906,13 +878,15 @@
                     const daysInMonth = new Date(year, month + 1, 0).getDate();
                     const todayDate = now.getDate();
 
+                    // Verjaardagen opslag in widgetData
+                    const bdays = state.widgetData[w.id] || {}; // key: 'YYYY-MM-DD' of 'MM-DD', value: string naam
+
                     let calHtml = `
                         <div class="flex items-center justify-between border-b pb-3 border-gray-200/60">
-                            <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent-color);">
-                                <i class="fa-solid fa-calendar-days" style="color: var(--accent-color);"></i>
+                            <h3 class="font-bold text-base flex items-center gap-2 capitalize" style="color: var(--accent-color);">
+                                <i class="fa-solid fa-cake-candles" style="color: var(--accent-color);"></i>
                                 <span>${escapeHtml(w.title)} (${monthNames[month]} ${year})</span>
                             </h3>
-                            <span class="text-[11px] text-gray-400 font-medium">Kalender</span>
                         </div>
                         <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-gray-400 pt-1">
                             <span>Ma</span><span>Di</span><span>Wo</span><span>Do</span><span>Vr</span><span>Za</span><span>Zo</span>
@@ -926,12 +900,58 @@
 
                     for (let d = 1; d <= daysInMonth; d++) {
                         const isToday = d === todayDate;
-                        calHtml += `<div class="py-1 rounded-lg font-medium ${isToday ? 'text-white font-bold shadow-sm' : 'hover:bg-gray-100 text-gray-700'}" ${isToday ? `style="background-color: var(--accent-color);"` : ''}>${d}</div>`;
+                        const mStr = String(month + 1).padStart(2, '0');
+                        const dStr = String(d).padStart(2, '0');
+                        const dateKey = `${mStr}-${dStr}`;
+                        const hasBday = bdays[dateKey];
+
+                        calHtml += `
+                            <div class="cal-day-cell relative py-1 rounded-lg font-medium cursor-pointer ${isToday ? 'text-white font-bold shadow-sm' : 'hover:bg-gray-100 text-gray-700'} ${hasBday ? 'border border-rose-400 bg-rose-50/50' : ''}" 
+                                 style="${isToday ? 'background-color: var(--accent-color);' : ''}" 
+                                 data-wid="${w.id}" data-datekey="${dateKey}" data-daynum="${d}" title="${hasBday ? 'Verjaardag: ' + hasBday : 'Klik om verjaardag toe te voegen'}">
+                                ${d}
+                                ${hasBday ? '<span class="absolute bottom-0.5 right-1 w-1.5 h-1.5 rounded-full bg-rose-500"></span>' : ''}
+                            </div>
+                        `;
                     }
 
                     calHtml += `</div>`;
+
+                    // Toon eventuele verjaardagen van deze maand onderaan
+                    const monthBdays = Object.entries(bdays).filter(([k]) => k.startsWith(String(month + 1).padStart(2, '0')));
+                    if (monthBdays.length > 0) {
+                        calHtml += `<div class="pt-2 border-t border-gray-100 text-[11px] text-gray-500 space-y-1">
+                            <span class="font-bold block text-[10px] uppercase text-gray-400">Verjaardagen deze maand:</span>`;
+                        monthBdays.forEach(([k, name]) => {
+                            const parts = k.split('-');
+                            calHtml += `<div class="flex justify-between"><span>${parts[1]} ${monthNames[month].toLowerCase()}: <strong>${escapeHtml(name)}</strong></span></div>`;
+                        });
+                        calHtml += `</div>`;
+                    }
+
                     card.innerHTML = calHtml;
                     container.appendChild(card);
+
+                    card.querySelectorAll('.cal-day-cell').forEach(cell => {
+                        cell.addEventListener('click', (e) => {
+                            const wid = e.currentTarget.dataset.wid;
+                            const dKey = e.currentTarget.dataset.datekey;
+                            const dNum = e.currentTarget.dataset.daynum;
+                            const currentVal = bdays[dKey] || '';
+                            const newName = prompt(`Wie is er jarig op ${dNum} ${monthNames[month]}? (Laat leeg om te wissen)`, currentVal);
+                            
+                            if (newName !== null) {
+                                if (!state.widgetData[wid]) state.widgetData[wid] = { ...bdays };
+                                if (newName.trim() === '') {
+                                    delete state.widgetData[wid][dKey];
+                                } else {
+                                    state.widgetData[wid][dKey] = newName.trim();
+                                }
+                                saveWidgetDataToFirebase();
+                                renderRightWidgets();
+                            }
+                        });
+                    });
                 }
             });
         }
@@ -1167,14 +1187,6 @@
             document.getElementById('header-avatar-container').addEventListener('click', () => document.getElementById('customizer-panel').classList.remove('hidden'));
             document.getElementById('btn-close-customizer').addEventListener('click', () => document.getElementById('customizer-panel').classList.add('hidden'));
 
-            const widgetDropdown = document.getElementById('widget-settings-dropdown');
-            document.getElementById('btn-toggle-widget-settings').addEventListener('click', () => {
-                widgetDropdown.classList.toggle('hidden');
-            });
-            document.getElementById('btn-close-widget-settings').addEventListener('click', () => {
-                widgetDropdown.classList.add('hidden');
-            });
-
             document.getElementById('planner-grid-container').addEventListener('click', (e) => {
                 const addBtn = e.target.closest('.btn-add-item-day');
                 if (addBtn) openItemModal(null, parseInt(addBtn.dataset.day));
@@ -1221,20 +1233,6 @@
                         saveSettingsToFirebase();
                     }, 600);
                 });
-            });
-
-            document.getElementById('btn-add-widget').addEventListener('click', () => {
-                const titleInp = document.getElementById('new-widget-title');
-                const typeSel = document.getElementById('new-widget-type');
-                const title = titleInp.value.trim();
-                if (title) {
-                    const newId = 'w_' + Date.now();
-                    state.settings.widgets.push({ id: newId, type: typeSel.value, title: title, enabled: true });
-                    titleInp.value = '';
-                    saveSettingsToFirebase();
-                    renderWidgetManager();
-                    renderRightWidgets();
-                }
             });
 
             document.getElementById('item-form').addEventListener('submit', (e) => {
